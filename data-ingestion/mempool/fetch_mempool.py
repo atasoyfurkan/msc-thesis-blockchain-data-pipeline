@@ -26,21 +26,23 @@ class MempoolDataFetcher:
         self.http_url = http_url
         self.save_dir = save_dir
         self.batch_size = batch_size
-        self.transaction_hashes = []
+        self.transactions = []
 
     def on_message(self, ws, message: str):
-        """Processes received WebSocket messages, collecting transaction hashes."""
+        """Processes received WebSocket messages, fetching and saving transaction details."""
         data = self._parse_message(message)
         if not data:
             return
 
         transaction_hash = data.get("params", {}).get("result")
         if transaction_hash:
-            self.transaction_hashes.append(transaction_hash)
+            transaction_details = self._fetch_transaction_details(transaction_hash)
+            if transaction_details:
+                self.transactions.append(transaction_details)
 
-        if len(self.transaction_hashes) >= self.batch_size:
-            self._fetch_and_save_transaction_details()
-            self.transaction_hashes.clear()
+        if len(self.transactions) >= self.batch_size:
+            self._save_to_parquet(self.transactions)
+            self.transactions.clear()
 
     def _parse_message(self, message: str) -> dict:
         """Parses JSON messages, handling errors."""
@@ -50,36 +52,35 @@ class MempoolDataFetcher:
             logging.error(f"Failed to decode message: {e}")
             return {}
 
-    def _fetch_and_save_transaction_details(self):
-        """Fetches transaction details from Infura and saves them in Parquet format."""
-        transactions = self._fetch_transaction_details()
-        if transactions:
-            self._save_to_parquet(transactions)
-        
-    def _fetch_transaction_details(self) -> list[dict]:
-        """Fetches detailed information for each transaction hash."""
-        payload = [{"jsonrpc": "2.0", "method": "eth_getTransactionByHash", "params": [tx_hash], "id": idx}
-                   for idx, tx_hash in enumerate(self.transaction_hashes)]
+    def _fetch_transaction_details(self, tx_hash: str) -> dict:
+        """Fetches detailed information for a single transaction hash."""
+        payload = {
+            "jsonrpc": "2.0",
+            "method": "eth_getTransactionByHash",
+            "params": [tx_hash],
+            "id": 1
+        }
         try:
             response = requests.post(self.http_url, json=payload)
             response.raise_for_status()
-            return [self._parse_transaction(tx) for tx in response.json() if tx.get("result")]
+            tx_data = response.json().get("result")
+            if tx_data:
+                return self._parse_transaction(tx_data)
         except requests.RequestException as e:
-            logging.error(f"Failed to fetch transaction details: {e}")
-            return []
+            logging.error(f"Failed to fetch transaction details for {tx_hash}: {e}")
+        return {}
 
     def _parse_transaction(self, tx: dict) -> dict:
-        """Extracts necessary fields from transaction data."""
-        tx_data = tx["result"]
+        """Extracts necessary fields from transaction data, converting large integers to strings."""
         return {
-            "hash": tx_data["hash"],
-            "from": tx_data["from"],
-            "to": tx_data["to"],
-            "value": int(tx_data["value"], 16),
-            "gas": int(tx_data["gas"], 16),
-            "gasPrice": int(tx_data["gasPrice"], 16),
-            "nonce": int(tx_data["nonce"], 16),
-            "input": tx_data["input"]
+            "hash": tx["hash"],
+            "from": tx["from"],
+            "to": tx.get("to"),
+            "value": str(int(tx["value"], 16)),  # Convert to string
+            "gas": str(int(tx["gas"], 16)),  # Convert to string
+            "gasPrice": str(int(tx["gasPrice"], 16)),  # Convert to string
+            "nonce": int(tx["nonce"], 16),
+            "input": tx["input"]
         }
 
     def _save_to_parquet(self, transactions: list[dict]):
