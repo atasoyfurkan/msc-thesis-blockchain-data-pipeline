@@ -6,6 +6,7 @@ import websocket
 import logging
 from datetime import datetime
 from pathlib import Path
+from typing import List, Optional
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -14,95 +15,114 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 INFURA_WS_URL = os.getenv("INFURA_WS_URL")
 INFURA_HTTP_URL = os.getenv("INFURA_HTTP_URL")
 DATA_DIR = Path("/data/mempool")
-SAVE_BATCH_SIZE = 100  # Number of transactions per batch
-
 DATA_DIR.mkdir(parents=True, exist_ok=True)  # Ensure the data directory exists
 
+# Global configuration for batch sizes
+FETCH_DETAIL_BATCH_SIZE = 10  # Number of transaction details to fetch at once (for rate limiting)
+SAVE_BATCH_SIZE = 1000        # Number of transactions to accumulate before saving (for storing in different files)
+
 class MempoolDataFetcher:
-    """Fetches Ethereum mempool data from Infura WebSocket API and saves transaction details."""
-    
-    def __init__(self, ws_url: str, http_url: str, save_dir: Path, batch_size: int = SAVE_BATCH_SIZE):
+    """Fetches Ethereum mempool transaction data and saves transaction details."""
+
+    def __init__(self, ws_url: str, http_url: str, save_dir: Path, fetch_detail_batch_size: int = FETCH_DETAIL_BATCH_SIZE, save_batch_size: int = SAVE_BATCH_SIZE):
         self.ws_url = ws_url
         self.http_url = http_url
         self.save_dir = save_dir
-        self.batch_size = batch_size
-        self.transactions = []
+        self.fetch_detail_batch_size = fetch_detail_batch_size
+        self.save_batch_size = save_batch_size
+        self.transaction_hashes = []
+        self.transaction_details = []
+        self.logged_progress = 0  # Track last logged percentage (for debugging)
 
     def on_message(self, ws, message: str):
-        """Processes received WebSocket messages, fetching and saving transaction details."""
-        data = self._parse_message(message)
-        if not data:
-            return
-
-        transaction_hash = data.get("params", {}).get("result")
+        """Handle incoming messages from the WebSocket."""
+        transaction_hash = self._extract_transaction_hash(message)
         if transaction_hash:
-            transaction_details = self._fetch_transaction_details(transaction_hash)
-            if transaction_details:
-                self.transactions.append(transaction_details)
+            self.transaction_hashes.append(transaction_hash)
 
-        if len(self.transactions) >= self.batch_size:
-            self._save_to_parquet(self.transactions)
-            self.transactions.clear()
+        # Fetch transaction details in batches
+        if len(self.transaction_hashes) >= self.fetch_detail_batch_size:
+            self._fetch_transaction_details()
+            self.transaction_hashes.clear()
+        
+        self._log_progress()
 
-    def _parse_message(self, message: str) -> dict:
-        """Parses JSON messages, handling errors."""
+        # Save accumulated transactions in SAVE_BATCH_SIZE batches
+        if len(self.transaction_details) >= self.save_batch_size:
+            self._save_to_parquet(self.transaction_details[:self.save_batch_size])
+            self.transaction_details = self.transaction_details[self.save_batch_size:]
+            self.logged_progress = 0  # Reset logged progress after saving
+
+    def _extract_transaction_hash(self, message: str) -> Optional[str]:
+        """Extracts the transaction hash from the WebSocket message."""
         try:
-            return json.loads(message)
+            data = json.loads(message)
+            return data.get("params", {}).get("result")
         except json.JSONDecodeError as e:
             logging.error(f"Failed to decode message: {e}")
-            return {}
+            return None
 
-    def _fetch_transaction_details(self, tx_hash: str) -> dict:
-        """Fetches detailed information for a single transaction hash."""
-        payload = {
-            "jsonrpc": "2.0",
-            "method": "eth_getTransactionByHash",
-            "params": [tx_hash],
-            "id": 1
-        }
+    def _fetch_transaction_details(self):
+        """Fetches transaction details for a batch of transaction hashes."""
+        payload = [
+            {"jsonrpc": "2.0", "method": "eth_getTransactionByHash", "params": [tx_hash], "id": idx}
+            for idx, tx_hash in enumerate(self.transaction_hashes)
+        ]
         try:
             response = requests.post(self.http_url, json=payload)
             response.raise_for_status()
-            tx_data = response.json().get("result")
-            if tx_data:
-                return self._parse_transaction(tx_data)
+            for tx in response.json():
+                if tx.get("result"):
+                    self.transaction_details.append(self._parse_transaction(tx["result"]))
         except requests.RequestException as e:
-            logging.error(f"Failed to fetch transaction details for {tx_hash}: {e}")
-        return {}
+            logging.error(f"Failed to fetch transaction details: {e}")
 
-    def _parse_transaction(self, tx: dict) -> dict:
-        """Extracts necessary fields from transaction data, converting large integers to strings."""
+    @staticmethod
+    def _parse_transaction(tx: dict) -> dict:
+        """Extracts relevant transaction fields and converts large integers to strings."""
         return {
             "hash": tx["hash"],
             "from": tx["from"],
             "to": tx.get("to"),
-            "value": str(int(tx["value"], 16)),  # Convert to string
-            "gas": str(int(tx["gas"], 16)),  # Convert to string
-            "gasPrice": str(int(tx["gasPrice"], 16)),  # Convert to string
+            "value": str(int(tx["value"], 16)),
+            "gas": int(tx["gas"], 16),
+            "gasPrice": int(tx["gasPrice"], 16),
             "nonce": int(tx["nonce"], 16),
             "input": tx["input"]
         }
 
-    def _save_to_parquet(self, transactions: list[dict]):
+    def _save_to_parquet(self, transactions: List[dict]):
         """Saves transactions to a Parquet file."""
         df = pd.DataFrame(transactions)
-        output_path = self.save_dir / f"mempool_{datetime.now().strftime('%Y%m%d%H%M%S')}.parquet"
+        filename = self.save_dir / f"mempool_{datetime.now().strftime('%Y%m%d%H%M%S')}.parquet"
         try:
-            df.to_parquet(output_path, index=False)
-            logging.info(f"Saved {len(transactions)} transactions to {output_path}")
+            df.to_parquet(filename, index=False)
+            logging.info(f"Saved {len(transactions)} transactions to {filename}")
         except Exception as e:
             logging.error(f"Failed to save transactions to Parquet: {e}")
+
+    def _log_progress(self):
+        """Logs the progress of transactions accumulation in 10% increments of save_batch_size."""
+        current_count = len(self.transaction_details)
+        progress_percentage = (current_count / self.save_batch_size) * 100
+
+        # Check if progress reached the next 10% increment
+        if progress_percentage >= self.logged_progress + 10:
+            self.logged_progress += 10
+            logging.info(f"Accumulated {current_count}/{self.save_batch_size} transactions for saving "
+                          f"({progress_percentage:.0f}%)")
+
 
     def on_error(self, ws, error: str):
         """Handles WebSocket errors."""
         logging.error(f"WebSocket error: {error}")
 
     def on_close(self, ws):
-        """Logs WebSocket closure."""
+        """Logs when the WebSocket connection is closed."""
         logging.info("WebSocket connection closed")
 
     def on_open(self, ws):
-        """Subscribes to Ethereum newPendingTransactions when WebSocket connection opens."""
+        """Subscribes to new pending transactions on WebSocket connection open."""
         ws.send(json.dumps({
             "jsonrpc": "2.0",
             "method": "eth_subscribe",
@@ -112,7 +132,7 @@ class MempoolDataFetcher:
         logging.info("Subscribed to newPendingTransactions")
 
     def start(self):
-        """Begins the WebSocket connection and data collection."""
+        """Starts the WebSocket connection and begins data collection."""
         ws = websocket.WebSocketApp(
             self.ws_url,
             on_open=self.on_open,
@@ -123,12 +143,16 @@ class MempoolDataFetcher:
         ws.run_forever()
 
 def main():
-    """Entry point to initialize and start the mempool data fetcher."""
+    """Main function to initialize and start the mempool data fetcher."""
     if not INFURA_WS_URL or not INFURA_HTTP_URL:
         logging.error("Environment variables INFURA_WS_URL and INFURA_HTTP_URL are required.")
         return
 
-    fetcher = MempoolDataFetcher(ws_url=INFURA_WS_URL, http_url=INFURA_HTTP_URL, save_dir=DATA_DIR)
+    fetcher = MempoolDataFetcher(
+        ws_url=INFURA_WS_URL,
+        http_url=INFURA_HTTP_URL,
+        save_dir=DATA_DIR
+    )
     fetcher.start()
 
 if __name__ == "__main__":
