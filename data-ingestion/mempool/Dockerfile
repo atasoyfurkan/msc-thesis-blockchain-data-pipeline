@@ -3,15 +3,11 @@
 FROM python:3.9-slim
 
 # Install dependencies
-RUN pip install websocket-client pandas pyarrow requests
+RUN pip install websocket-client pandas pyarrow requests minio
 
 # Copy the script
 WORKDIR /app
-COPY fetch_mempool.py /app/fetch_mempool.py
-
-# Set environment variable for data storage
-ENV DATA_DIR /data/mempool
-RUN mkdir -p $DATA_DIR
+COPY . .
 
 # Command to run the script
-CMD ["python", "/app/fetch_mempool.py"]
+CMD ["python", "main.py"]
