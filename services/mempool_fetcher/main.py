@@ -1,10 +1,9 @@
 import os
 import logging
-from mempool_data_fetcher import MempoolDataFetcher
-from minio_client import MinioClient
+from data_ingestion.mempool.fetcher import MempoolDataFetcher
+from data_storage.minio.client import MinioClient
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
-
 
 def main():
     """Main function to initialize and start the mempool data fetcher."""
@@ -18,7 +17,7 @@ def main():
     FETCH_DETAIL_BATCH_SIZE = 10
     SAVE_BATCH_SIZE = 100
 
-    if not INFURA_WS_URL or not INFURA_HTTP_URL or not MINIO_ENDPOINT or not MINIO_ROOT_USER or not MINIO_ROOT_PASSWORD:
+    if not INFURA_WS_URL or not INFURA_HTTP_URL or not MINIO_ENDPOINT or not MINIO_ROOT_USER or not MINIO_ROOT_PASSWORD or not MINIO_BUCKET:
         logging.error("Missing required environment variables.")
         return
 
@@ -30,9 +29,9 @@ def main():
     )
 
     mempool_data_fetcher = MempoolDataFetcher(
+        minio_client=minio_client,
         ws_url=INFURA_WS_URL,
         http_url=INFURA_HTTP_URL,
-        minio_client=minio_client,
         fetch_detail_batch_size=FETCH_DETAIL_BATCH_SIZE,
         save_batch_size=SAVE_BATCH_SIZE
     )

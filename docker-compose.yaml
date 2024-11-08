@@ -5,11 +5,10 @@ services:
     image: quay.io/minio/minio:latest
     container_name: minio
     env_file: 
-      - ./data-ingestion/mempool/.env
+      - ./services/minio/.env
     volumes:
       - ./minio_data:/data                  # Local directory for persistent data storage
     ports:
-      - "9000:9000"                         # MinIO API port
       - "9001:9001"                         # MinIO console port
     command: server /data --console-address ":9001"
     restart: always
@@ -19,12 +18,14 @@ services:
       timeout: 20s
       retries: 3
 
-  mempool_data_fetcher:
+  mempool_fetcher:
     build:
-      context: ./data-ingestion/mempool
-    container_name: mempool_data_fetcher
+      context: .
+      dockerfile: ./services/mempool_fetcher/Dockerfile
+    container_name: mempool_fetcher
     env_file: 
-      - ./data-ingestion/mempool/.env
+      - ./services/mempool_fetcher/.env
+      - ./services/minio/.env
     depends_on:
       - minio
     # restart: unless-stopped

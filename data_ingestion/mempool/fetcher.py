@@ -10,10 +10,10 @@ from typing import Optional
 class MempoolDataFetcher:
     """Fetches Ethereum mempool transaction data and saves transaction details to MinIO."""
 
-    def __init__(self, ws_url: str, http_url: str, minio_client, fetch_detail_batch_size: int = 10, save_batch_size: int = 100):
+    def __init__(self, minio_client, ws_url: str, http_url: str, fetch_detail_batch_size: int = 10, save_batch_size: int = 100):
+        self.minio_client = minio_client
         self.ws_url = ws_url
         self.http_url = http_url
-        self.minio_client = minio_client
         self.fetch_detail_batch_size = fetch_detail_batch_size
         self.save_batch_size = save_batch_size
         self.transaction_hashes = []
