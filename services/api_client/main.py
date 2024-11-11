@@ -1,0 +1,39 @@
+from data_access.api_client.client import DataPipelineClient
+import logging
+import os
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
+def main():
+    API_ENDPOINT = os.getenv("API_ENDPOINT")
+
+    client = DataPipelineClient(API_ENDPOINT)
+
+    # List buckets
+    buckets = client.list_buckets()
+    print("Buckets:", buckets)
+
+    # List files in a specific bucket
+    bucket_name = buckets[0]
+    print("Files:", client.list_files(bucket_name))
+
+    # List available dates in a bucket
+    dates = client.list_dates(bucket_name)
+    print("Dates:", dates)
+
+    # Get tables for a specific date range
+    tables = client.get_tables(bucket_name, dates=dates)
+    print("Tables:", tables)
+
+    # Execute a query
+    query=f"""
+    SELECT *
+    FROM {tables}
+    WHERE gasPrice > 1000000000
+    """
+    query_result = client.query(query=query)
+    print(query_result)
+
+
+if __name__ == "__main__":
+    main()

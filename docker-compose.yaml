@@ -3,7 +3,6 @@ version: '3.7'
 services:
   minio:
     image: quay.io/minio/minio:latest
-    container_name: minio
     env_file: 
       - ./services/minio/.env
     volumes:
@@ -16,13 +15,12 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 30s
       timeout: 20s
-      retries: 3
+      retries: 5
 
   mempool_fetcher:
     build:
       context: .
       dockerfile: ./services/mempool_fetcher/Dockerfile
-    container_name: mempool_fetcher
     env_file: 
       - ./services/mempool_fetcher/.env
       - ./services/minio/.env
@@ -34,7 +32,6 @@ services:
     build:
       context: .
       dockerfile: ./services/duckdb_querier/Dockerfile
-    container_name: duckdb_querier
     env_file: 
       - ./services/duckdb_querier/.env
       - ./services/minio/.env
@@ -46,7 +43,6 @@ services:
     build: 
       context: .
       dockerfile: ./services/api_backend/Dockerfile
-    container_name: api_backend
     env_file: 
       - ./services/api_backend/.env
       - ./services/minio/.env
@@ -54,6 +50,16 @@ services:
       - "8000:8000"
     depends_on:
       - minio
+
+  api_client:
+    build: 
+      context: .
+      dockerfile: ./services/api_client/Dockerfile
+    env_file: 
+      - ./services/api_client/.env
+    command: ["sh", "-c", "sleep 5 && python main.py"]
+    depends_on:
+      - api_backend
 
 
 volumes:

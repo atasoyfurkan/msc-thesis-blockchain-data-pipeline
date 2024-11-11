@@ -28,18 +28,15 @@ router = APIRouter()
 
 @router.get("/buckets")
 def list_buckets():
-    buckets = minio_client.list_buckets()
-    return {"buckets": buckets}
+    return minio_client.list_buckets()
 
 @router.get("/files/{bucket_name}")
 def list_files(bucket_name: str):
-    files = minio_client.list_objects(bucket_name=bucket_name)
-    return {"files": files}
+    return minio_client.list_objects(bucket_name=bucket_name)
 
 @router.get("/dates/{bucket_name}")
 def list_dates(bucket_name: str):
-    dates = minio_client.list_dates(bucket_name=bucket_name)
-    return {"dates": dates}
+    return minio_client.list_dates(bucket_name=bucket_name)
 
 @router.get("/tables/{bucket_name}")
 def get_tables(
@@ -56,11 +53,10 @@ def get_tables(
             tables = duckdb_manager.get_tables_with_dates(bucket_name=bucket_name, dates=dates)
         else:
             tables = duckdb_manager.get_tables_with_range(bucket_name=bucket_name, start_date=start_date, end_date=end_date)
-        return {"tables": tables}
+        return tables
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate tables: {e}")
 
-# make post request.body as json
 @router.get("/query")
 def query_duckdb(query: str):
     """Execute a query on DuckDB and return compressed Parquet data."""
@@ -68,19 +64,6 @@ def query_duckdb(query: str):
         # Query DuckDB
         result_df = duckdb_manager.query(query)
         
-        # double the size of result_df by copyi
-        result_df = pd.concat([result_df, result_df], ignore_index=True)
-        result_df = pd.concat([result_df, result_df], ignore_index=True)
-        result_df = pd.concat([result_df, result_df], ignore_index=True)
-        result_df = pd.concat([result_df, result_df], ignore_index=True)
-        result_df = pd.concat([result_df, result_df], ignore_index=True)
-        result_df = pd.concat([result_df, result_df], ignore_index=True)
-        result_df = pd.concat([result_df, result_df], ignore_index=True)
-        result_df = pd.concat([result_df, result_df], ignore_index=True)
-        result_df = pd.concat([result_df, result_df], ignore_index=True)
-        
-        logging.info(f"Query result: {result_df}")
-
         # Convert DataFrame to Parquet in-memory
         table = pa.Table.from_pandas(result_df)
         output = BytesIO()
