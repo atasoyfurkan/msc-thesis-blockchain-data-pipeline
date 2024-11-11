@@ -30,6 +30,18 @@ services:
       - minio
     # restart: unless-stopped
 
+  duckdb_querier:
+    build:
+      context: .
+      dockerfile: ./services/duckdb_querier/Dockerfile
+    container_name: duckdb_querier
+    env_file: 
+      - ./services/duckdb_querier/.env
+      - ./services/minio/.env
+    depends_on:
+      - minio
+    # restart: unless-stopped
+
 volumes:
   minio_data:
     driver: local

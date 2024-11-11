@@ -1,17 +1,15 @@
 import json
 import logging
-import pandas as pd
 import requests
 import websocket
 from datetime import datetime
-from pathlib import Path
 from typing import Optional
 
 class MempoolDataFetcher:
     """Fetches Ethereum mempool transaction data and saves transaction details to MinIO."""
 
-    def __init__(self, minio_client, ws_url: str, http_url: str, fetch_detail_batch_size: int = 10, save_batch_size: int = 100):
-        self.minio_client = minio_client
+    def __init__(self, minio_write_client, ws_url: str, http_url: str, fetch_detail_batch_size: int = 10, save_batch_size: int = 100):
+        self.minio_write_client = minio_write_client
         self.ws_url = ws_url
         self.http_url = http_url
         self.fetch_detail_batch_size = fetch_detail_batch_size
@@ -75,20 +73,13 @@ class MempoolDataFetcher:
             "gas": int(tx["gas"], 16),
             "gasPrice": int(tx["gasPrice"], 16),
             "nonce": int(tx["nonce"], 16),
-            "input": tx["input"]
+            "input": tx["input"],
+            # "fetched_at": datetime.now().isoformat()
         }
 
     def _save_to_minio(self, transactions: list[dict]):
         """Saves transactions to MinIO as a Parquet file."""
-        df = pd.DataFrame(transactions)
-        filename = f"mempool_{datetime.now().strftime('%Y%m%d%H%M%S')}.parquet"
-        temp_file = Path("/tmp") / filename
-        try:
-            df.to_parquet(temp_file, index=False)
-            self.minio_client.upload_file(temp_file, filename)
-            temp_file.unlink()
-        except Exception as e:
-            logging.error(f"Failed to save transactions to MinIO: {e}")
+        self.minio_write_client.upload_table_as_parquet(transactions)
 
     def _log_progress(self):
         """Logs the progress of transactions accumulation in 10% increments of save_batch_size."""

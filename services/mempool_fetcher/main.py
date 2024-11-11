@@ -1,7 +1,7 @@
 import os
 import logging
 from data_ingestion.mempool.fetcher import MempoolDataFetcher
-from data_storage.minio.client import MinioClient
+from data_storage.minio.write_client import MinioWriteClient
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -21,7 +21,7 @@ def main():
         logging.error("Missing required environment variables.")
         return
 
-    minio_client = MinioClient(
+    minio_write_client = MinioWriteClient(
         endpoint=MINIO_ENDPOINT,
         access_key=MINIO_ROOT_USER,
         secret_key=MINIO_ROOT_PASSWORD,
@@ -29,7 +29,7 @@ def main():
     )
 
     mempool_data_fetcher = MempoolDataFetcher(
-        minio_client=minio_client,
+        minio_write_client=minio_write_client,
         ws_url=INFURA_WS_URL,
         http_url=INFURA_HTTP_URL,
         fetch_detail_batch_size=FETCH_DETAIL_BATCH_SIZE,
