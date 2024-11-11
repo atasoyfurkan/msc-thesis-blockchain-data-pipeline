@@ -20,17 +20,16 @@ class DuckDBManager:
         """)
         return conn
 
-    def query_parquet(self, query):
+    def query(self, query):
         """
-        Queries a Parquet file stored in MinIO using DuckDB.
-        Filters rows where gasPrice is above the threshold.
+        Queries files stored in MinIO using DuckDB.
         """
         conn = self._configure_duckdb_connection()
         try:
             result_df = conn.execute(query).fetchdf()
             return result_df
         except Exception as e:
-            logging.error(f"Failed to query Parquet file: {e}")
+            logging.error(f"Failed to query: {e}")
             return None
         finally:
             conn.close()

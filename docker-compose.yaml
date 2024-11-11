@@ -42,6 +42,20 @@ services:
       - minio
     # restart: unless-stopped
 
+  api_backend:
+    build: 
+      context: .
+      dockerfile: ./services/api_backend/Dockerfile
+    container_name: api_backend
+    env_file: 
+      - ./services/api_backend/.env
+      - ./services/minio/.env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - minio
+
+
 volumes:
   minio_data:
     driver: local

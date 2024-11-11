@@ -1,6 +1,5 @@
 import os
 import logging
-from time import sleep
 from data_storage.minio.read_client import MinioReadClient
 from data_access.duckdb.manager import DuckDBManager
 
@@ -47,7 +46,7 @@ def main():
     logging.info(f"FROM tables: {tables}")
 
     query = f"SELECT * FROM {tables} WHERE fetched_at IS NULL"
-    result_df = duckdb_manager.query_parquet(query)
+    result_df = duckdb_manager.query(query)
 
     logging.info(f"Query result: {result_df}")
 

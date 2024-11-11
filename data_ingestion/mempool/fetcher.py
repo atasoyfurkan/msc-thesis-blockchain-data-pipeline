@@ -74,7 +74,7 @@ class MempoolDataFetcher:
             "gasPrice": int(tx["gasPrice"], 16),
             "nonce": int(tx["nonce"], 16),
             "input": tx["input"],
-            # "fetched_at": datetime.now().isoformat()
+            "fetched_at": datetime.now().isoformat()
         }
 
     def _save_to_minio(self, transactions: list[dict]):

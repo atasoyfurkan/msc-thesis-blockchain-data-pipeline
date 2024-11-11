@@ -3,7 +3,7 @@
 FROM python:3.9-slim
 
 # Install dependencies
-RUN pip install minio duckdb numpy pandas
+RUN pip install minio duckdb pandas
 
 WORKDIR /app
 # copy other modules
