@@ -3,7 +3,7 @@
 FROM python:3.9-slim
 
 # Install dependencies
-RUN pip install minio duckdb pandas fastapi uvicorn pyarrow
+RUN pip install minio duckdb pandas fastapi uvicorn pyarrow requests
 
 WORKDIR /app
 # copy other modules

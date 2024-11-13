@@ -71,7 +71,7 @@ class MempoolDataFetcher:
             "to": tx.get("to"),
             "value": str(int(tx["value"], 16)),
             "gas": int(tx["gas"], 16),
-            "gasPrice": int(tx["gasPrice"], 16),
+            "gas_price": int(tx["gasPrice"], 16),
             "nonce": int(tx["nonce"], 16),
             "input": tx["input"],
             "fetched_at": datetime.now().isoformat()

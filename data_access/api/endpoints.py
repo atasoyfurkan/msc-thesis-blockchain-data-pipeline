@@ -1,13 +1,13 @@
 from data_access.duckdb.manager import DuckDBManager
 from data_storage.minio.read_client import MinioReadClient
+from data_access.api.auth import authenticate_user
 import os
 from io import BytesIO
 from typing import Optional
 import logging
-from fastapi import APIRouter, HTTPException, Response, Query
+from fastapi import APIRouter, HTTPException, Response, Query, Depends
 import pyarrow as pa
 import pyarrow.parquet as pq
-import pandas as pd
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -27,15 +27,15 @@ duckdb_manager = DuckDBManager(minio_read_client=minio_client)
 router = APIRouter()
 
 @router.get("/buckets")
-def list_buckets():
+def list_buckets(user = Depends(authenticate_user)):
     return minio_client.list_buckets()
 
 @router.get("/files/{bucket_name}")
-def list_files(bucket_name: str):
+def list_files(bucket_name: str, user = Depends(authenticate_user)):
     return minio_client.list_objects(bucket_name=bucket_name)
 
 @router.get("/dates/{bucket_name}")
-def list_dates(bucket_name: str):
+def list_dates(bucket_name: str, user = Depends(authenticate_user)):
     return minio_client.list_dates(bucket_name=bucket_name)
 
 @router.get("/tables/{bucket_name}")
@@ -43,7 +43,8 @@ def get_tables(
     bucket_name: str, 
     start_date: Optional[str] = None, 
     end_date: Optional[str] = None, 
-    dates: Optional[list[str]] = Query(None)
+    dates: Optional[list[str]] = Query(None),
+    user = Depends(authenticate_user)
 ):
     if not (dates or (start_date and end_date)):
         raise HTTPException(status_code=400, detail="Either 'dates' or 'start_date' and 'end_date' must be provided")
@@ -58,7 +59,7 @@ def get_tables(
         raise HTTPException(status_code=500, detail=f"Failed to generate tables: {e}")
 
 @router.get("/query")
-def query_duckdb(query: str):
+def query_duckdb(query: str, user = Depends(authenticate_user)):
     """Execute a query on DuckDB and return compressed Parquet data."""
     try:
         # Query DuckDB

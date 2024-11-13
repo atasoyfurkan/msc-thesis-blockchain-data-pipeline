@@ -1,3 +1,4 @@
+import os
 import requests
 import pandas as pd
 import pyarrow.parquet as pq
@@ -15,22 +16,30 @@ class DataPipelineClient:
         :param base_url: The base URL of the FastAPI server (e.g., 'http://localhost:8000')
         """
         self.base_url = base_url.rstrip('/')
+        self.token = os.getenv("JUPYTERHUB_API_TOKEN")
+
+        if not self.token:
+            raise ValueError("JUPYTERHUB_API_TOKEN environment variable is not set")
+    
+    def _get_auth_headers(self) -> dict:
+        """Get the authorization headers for API requests."""
+        return {"Authorization": f"token {self.token}"}
 
     def list_buckets(self) -> list[str]:
         """Fetch the list of all buckets."""
-        response = requests.get(f"{self.base_url}/buckets")
+        response = requests.get(f"{self.base_url}/buckets", headers=self._get_auth_headers())
         response.raise_for_status()
         return response.json()
 
     def list_files(self, bucket_name: str) -> list[dict]:
         """Fetch the list of files in a given bucket."""
-        response = requests.get(f"{self.base_url}/files/{bucket_name}")
+        response = requests.get(f"{self.base_url}/files/{bucket_name}", headers=self._get_auth_headers())
         response.raise_for_status()
         return response.json()
 
     def list_dates(self, bucket_name: str) -> list[str]:
         """Fetch the available dates for a given bucket."""
-        response = requests.get(f"{self.base_url}/dates/{bucket_name}")
+        response = requests.get(f"{self.base_url}/dates/{bucket_name}", headers=self._get_auth_headers())
         response.raise_for_status()
         return response.json()
 
@@ -51,7 +60,7 @@ class DataPipelineClient:
         else:
             raise ValueError("Either 'dates' or 'start_date' and 'end_date' must be provided")
 
-        response = requests.get(f"{self.base_url}/tables/{bucket_name}", params=params)
+        response = requests.get(f"{self.base_url}/tables/{bucket_name}", params=params, headers=self._get_auth_headers())
         response.raise_for_status()
         return response.json()
 
@@ -61,7 +70,7 @@ class DataPipelineClient:
         :param query: The SQL query to execute.
         :return: pandas DataFrame containing the query result.
         """
-        response = requests.get(f"{self.base_url}/query", params={'query': query})
+        response = requests.get(f"{self.base_url}/query", params={'query': query}, headers=self._get_auth_headers())
         response.raise_for_status()
 
         # Read the parquet data into a DataFrame
