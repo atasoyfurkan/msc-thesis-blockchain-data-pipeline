@@ -4,11 +4,12 @@ import requests
 import websocket
 from datetime import datetime
 from typing import Optional
+from data_storage.minio.write_client import MinioWriteClient
 
 class MempoolDataFetcher:
     """Fetches Ethereum mempool transaction data and saves transaction details to MinIO."""
 
-    def __init__(self, minio_write_client, ws_url: str, http_url: str, fetch_detail_batch_size: int = 10, save_batch_size: int = 100):
+    def __init__(self, minio_write_client: MinioWriteClient, ws_url: str, http_url: str, fetch_detail_batch_size: int = 10, save_batch_size: int = 100):
         self.minio_write_client = minio_write_client
         self.ws_url = ws_url
         self.http_url = http_url

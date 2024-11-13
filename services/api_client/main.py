@@ -29,7 +29,7 @@ def main():
     query=f"""
     SELECT *
     FROM {tables}
-    WHERE gasPrice > 1000000000
+    WHERE gas_price > 1000000000
     """
     query_result = client.query(query=query)
     print(query_result)

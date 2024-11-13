@@ -47,14 +47,18 @@ def get_tables(
     user = Depends(authenticate_user)
 ):
     if not (dates or (start_date and end_date)):
-        raise HTTPException(status_code=400, detail="Either 'dates' or 'start_date' and 'end_date' must be provided")
+        raise HTTPException(status_code=400, detail="Either 'dates' or 'start_date' and 'end_date' must be provided")    
+    # In the future, we can add validation for date format to check if it is correctly provided
 
     try:
         if dates:
             tables = duckdb_manager.get_tables_with_dates(bucket_name=bucket_name, dates=dates)
         else:
             tables = duckdb_manager.get_tables_with_range(bucket_name=bucket_name, start_date=start_date, end_date=end_date)
+        
         return tables
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate tables: {e}")
 

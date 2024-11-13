@@ -30,7 +30,7 @@ class DuckDBManager:
             return result_df
         except Exception as e:
             logging.error(f"Failed to query: {e}")
-            return None
+            raise e
         finally:
             conn.close()
 
@@ -51,6 +51,9 @@ class DuckDBManager:
             if self.minio_read_client.is_prefix_exist(bucket_name, f"{year}/{month}/{day}"):
                 s3_paths.append(f"s3://{bucket_name}/{year}/{month}/{day}/*.parquet")
         
+        if not s3_paths:
+            raise ValueError("No tables found for the given dates")
+
         return f"read_parquet({s3_paths}, union_by_name=True)"
 
     def get_tables_with_range(self, bucket_name: str, start_date: str, end_date: str) -> str:

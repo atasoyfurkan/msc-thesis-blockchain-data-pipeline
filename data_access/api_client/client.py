@@ -1,5 +1,6 @@
 import os
 import requests
+from requests.exceptions import HTTPError
 import pandas as pd
 import pyarrow.parquet as pq
 from io import BytesIO
@@ -60,9 +61,14 @@ class DataPipelineClient:
         else:
             raise ValueError("Either 'dates' or 'start_date' and 'end_date' must be provided")
 
-        response = requests.get(f"{self.base_url}/tables/{bucket_name}", params=params, headers=self._get_auth_headers())
-        response.raise_for_status()
-        return response.json()
+        try:
+            response = requests.get(f"{self.base_url}/tables/{bucket_name}", params=params, headers=self._get_auth_headers())
+            response.raise_for_status()
+
+            return response.json()
+        except HTTPError as exception:
+            if exception.response.status_code == 400:
+                raise ValueError(f"Invalid request (400): {response.text}")
 
     def query(self, query: str) -> pd.DataFrame:
         """
@@ -70,9 +76,13 @@ class DataPipelineClient:
         :param query: The SQL query to execute.
         :return: pandas DataFrame containing the query result.
         """
-        response = requests.get(f"{self.base_url}/query", params={'query': query}, headers=self._get_auth_headers())
-        response.raise_for_status()
+        try:
+            response = requests.get(f"{self.base_url}/query", params={'query': query}, headers=self._get_auth_headers())
+            response.raise_for_status()
 
-        # Read the parquet data into a DataFrame
-        parquet_data = BytesIO(response.content)
-        return pq.read_table(parquet_data).to_pandas()
+            # Read the parquet data into a DataFrame
+            parquet_data = BytesIO(response.content)
+            return pq.read_table(parquet_data).to_pandas()
+        except HTTPError as exception:
+            if exception.response.status_code == 500:
+                raise HTTPError(f"Internal Server Error (500): Failed to execute query {response.text}")
