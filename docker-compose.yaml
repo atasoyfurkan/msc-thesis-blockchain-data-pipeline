@@ -15,16 +15,27 @@ services:
       timeout: 20s
       retries: 5
 
-  mempool_fetcher:
-    build:
-      context: .
-      dockerfile: ./services/mempool_fetcher/Dockerfile
-    env_file: 
-      - ./services/mempool_fetcher/.env
-      - ./services/minio/.env
-    depends_on:
-      - minio
-    # restart: unless-stopped
+  # mempool_fetcher:
+  #   build:
+  #     context: .
+  #     dockerfile: ./services/mempool_fetcher/Dockerfile
+  #   env_file: 
+  #     - ./services/mempool_fetcher/.env
+  #     - ./services/minio/.env
+  #   depends_on:
+  #     - minio
+  #   restart: unless-stopped
+
+  # price_data_fetcher:
+  #   build:
+  #     context: .
+  #     dockerfile: ./services/price_data_fetcher/Dockerfile
+  #   env_file: 
+  #     - ./services/price_data_fetcher/.env
+  #     - ./services/minio/.env
+  #   depends_on:
+  #     - minio
+  #   restart: unless-stopped
 
   # duckdb_querier:
   #   build:
@@ -49,15 +60,15 @@ services:
     depends_on:
       - minio
 
-  api_client:
-    build: 
-      context: .
-      dockerfile: ./services/api_client/Dockerfile
-    env_file: 
-      - ./services/api_client/.env
-    command: ["sh", "-c", "sleep 5 && python main.py"]
-    depends_on:
-      - api_backend
+  # api_client:
+  #   build: 
+  #     context: .
+  #     dockerfile: ./services/api_client/Dockerfile
+  #   env_file: 
+  #     - ./services/api_client/.env
+  #   command: ["sh", "-c", "sleep 5 && python main.py"]
+  #   depends_on:
+  #     - api_backend
 
 
 volumes:

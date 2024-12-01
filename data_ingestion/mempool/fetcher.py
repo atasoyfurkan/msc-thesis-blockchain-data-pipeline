@@ -5,19 +5,17 @@ import websocket
 from datetime import datetime
 from typing import Optional
 from data_storage.minio.write_client import MinioWriteClient
+from data_ingestion.base_fetcher import DataFetcherBase
 
-class MempoolDataFetcher:
+class MempoolDataFetcher(DataFetcherBase):
     """Fetches Ethereum mempool transaction data and saves transaction details to MinIO."""
 
     def __init__(self, minio_write_client: MinioWriteClient, ws_url: str, http_url: str, fetch_detail_batch_size: int = 10, save_batch_size: int = 100):
-        self.minio_write_client = minio_write_client
+        super().__init__(minio_write_client=minio_write_client, save_batch_size=save_batch_size)
         self.ws_url = ws_url
         self.http_url = http_url
         self.fetch_detail_batch_size = fetch_detail_batch_size
-        self.save_batch_size = save_batch_size
         self.transaction_hashes = []
-        self.transaction_details = []
-        self.logged_progress = 0
 
     def on_message(self, ws, message: str):
         """Handle incoming WebSocket messages."""
@@ -29,12 +27,10 @@ class MempoolDataFetcher:
             self._fetch_transaction_details()
             self.transaction_hashes.clear()
 
-        self._log_progress()
+        self.log_progress()
 
-        if len(self.transaction_details) >= self.save_batch_size:
-            self._save_to_minio(self.transaction_details[:self.save_batch_size])
-            self.transaction_details = self.transaction_details[self.save_batch_size:]
-            self.logged_progress = 0
+        if len(self.data_batch) >= self.save_batch_size:
+            self.save_to_minio()
 
     def _extract_transaction_hash(self, message: str) -> Optional[str]:
         """Extracts the transaction hash from the WebSocket message."""
@@ -59,7 +55,9 @@ class MempoolDataFetcher:
             response.raise_for_status()
             for tx in response.json():
                 if tx.get("result"):
-                    self.transaction_details.append(self._parse_transaction(tx["result"]))
+                    transaction_detail = self._parse_transaction(tx["result"])
+                    logging.debug(f"Fetched transaction detail: {transaction_detail}")
+                    self.data_batch.append(transaction_detail)
         except requests.RequestException as e:
             logging.error(f"Failed to fetch transaction details: {e}")
 
@@ -77,22 +75,7 @@ class MempoolDataFetcher:
             "input": tx["input"],
             "fetched_at": datetime.now().isoformat()
         }
-
-    def _save_to_minio(self, transactions: list[dict]):
-        """Saves transactions to MinIO as a Parquet file."""
-        self.minio_write_client.upload_table_as_parquet(transactions)
-
-    def _log_progress(self):
-        """Logs the progress of transactions accumulation in 10% increments of save_batch_size."""
-        current_count = len(self.transaction_details)
-        progress_percentage = (current_count / self.save_batch_size) * 100
-
-        # Check if progress reached the next 10% increment
-        if progress_percentage >= self.logged_progress + 10:
-            self.logged_progress += 10
-            logging.info(f"Accumulated {current_count}/{self.save_batch_size} transactions for saving "
-                          f"({progress_percentage:.0f}%)")
-
+    
     def on_error(self, ws, error: str):
         """Handles WebSocket errors."""
         logging.error(f"WebSocket error: {error}")

@@ -32,20 +32,20 @@ def main():
         minio_read_client=minio_read_client
     )
 
-    # tables = duckdb_manager.get_tables_with_range(
+    # table_path = duckdb_manager.get_table_path_with_range(
     #     bucket_name=buckets[0],
     #     start_date="2024/11/10",
     #     end_date="2024/11/13"
     # )
 
-    tables = duckdb_manager.get_tables_with_dates(
+    table_path = duckdb_manager.get_table_path_with_dates(
         bucket_name=buckets[0],
         dates=["2024/11/10", "2024/11/11", "2024/11/12"]
     )
 
-    logging.info(f"FROM tables: {tables}")
+    logging.info(f"FROM table_path: {table_path}")
 
-    query = f"SELECT * FROM {tables} WHERE fetched_at IS NULL"
+    query = f"SELECT * FROM {table_path} WHERE fetched_at IS NULL"
     result_df = duckdb_manager.query(query)
 
     logging.info(f"Query result: {result_df}")

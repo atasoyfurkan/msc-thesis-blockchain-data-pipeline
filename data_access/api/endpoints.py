@@ -38,8 +38,8 @@ def list_files(bucket_name: str, user = Depends(authenticate_user)):
 def list_dates(bucket_name: str, user = Depends(authenticate_user)):
     return minio_client.list_dates(bucket_name=bucket_name)
 
-@router.get("/tables/{bucket_name}")
-def get_tables(
+@router.get("/table_path/{bucket_name}")
+def get_table_path(
     bucket_name: str, 
     start_date: Optional[str] = None, 
     end_date: Optional[str] = None, 
@@ -52,15 +52,15 @@ def get_tables(
 
     try:
         if dates:
-            tables = duckdb_manager.get_tables_with_dates(bucket_name=bucket_name, dates=dates)
+            table_path = duckdb_manager.get_table_path_with_dates(bucket_name=bucket_name, dates=dates)
         else:
-            tables = duckdb_manager.get_tables_with_range(bucket_name=bucket_name, start_date=start_date, end_date=end_date)
+            table_path = duckdb_manager.get_table_path_with_range(bucket_name=bucket_name, start_date=start_date, end_date=end_date)
         
-        return tables
+        return table_path
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate tables: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate table path: {e}")
 
 @router.get("/query")
 def query_duckdb(query: str, user = Depends(authenticate_user)):

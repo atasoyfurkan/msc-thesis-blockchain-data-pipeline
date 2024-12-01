@@ -21,14 +21,14 @@ def main():
     dates = client.list_dates(bucket_name)
     print("Dates:", dates)
 
-    # Get tables for a specific date range
-    tables = client.get_tables(bucket_name, dates=dates)
-    print("Tables:", tables)
+    # Get table path for a specific date range
+    table_path = client.get_table_path(bucket_name, dates=dates)
+    print("Table path:", table_path)
 
     # Execute a query
     query=f"""
     SELECT *
-    FROM {tables}
+    FROM {table_path}
     WHERE gas_price > 1000000000
     """
     query_result = client.query(query=query)

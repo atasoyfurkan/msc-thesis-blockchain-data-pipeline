@@ -44,7 +44,7 @@ class DataPipelineClient:
         response.raise_for_status()
         return response.json()
 
-    def get_tables(self, bucket_name: str, start_date=None, end_date=None, dates=None) -> str:
+    def get_table_path(self, bucket_name: str, start_date: str = None, end_date: str = None, dates: str = None) -> str:
         """
         Fetch table paths based on a date range or specific dates.
         :param bucket_name: Name of the bucket
@@ -62,7 +62,7 @@ class DataPipelineClient:
             raise ValueError("Either 'dates' or 'start_date' and 'end_date' must be provided")
 
         try:
-            response = requests.get(f"{self.base_url}/tables/{bucket_name}", params=params, headers=self._get_auth_headers())
+            response = requests.get(f"{self.base_url}/table_path/{bucket_name}", params=params, headers=self._get_auth_headers())
             response.raise_for_status()
 
             return response.json()

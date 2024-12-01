@@ -9,12 +9,13 @@ def main():
     """Main function to initialize and start the mempool data fetcher."""
     INFURA_WS_URL = os.getenv("INFURA_WS_URL")
     INFURA_HTTP_URL = os.getenv("INFURA_HTTP_URL")
-    MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT")
-    MINIO_ROOT_USER = os.getenv("MINIO_ROOT_USER")
-    MINIO_ROOT_PASSWORD = os.getenv("MINIO_ROOT_PASSWORD")
-    MINIO_BUCKET = os.getenv("MINIO_BUCKET")
     FETCH_DETAIL_BATCH_SIZE = int(os.getenv("FETCH_DETAIL_BATCH_SIZE"))
     SAVE_BATCH_SIZE = int(os.getenv("SAVE_BATCH_SIZE"))
+
+    MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT")
+    MINIO_BUCKET = os.getenv("MINIO_BUCKET")
+    MINIO_ROOT_USER = os.getenv("MINIO_ROOT_USER")
+    MINIO_ROOT_PASSWORD = os.getenv("MINIO_ROOT_PASSWORD")
 
     if not INFURA_WS_URL or not INFURA_HTTP_URL or not MINIO_ENDPOINT or not MINIO_ROOT_USER or not MINIO_ROOT_PASSWORD or not MINIO_BUCKET:
         logging.error("Missing required environment variables.")

@@ -34,13 +34,13 @@ class DuckDBManager:
         finally:
             conn.close()
 
-    def get_table(self, bucket_name: str, file_name: str):
+    def _get_table_path_with_file_name(self, bucket_name: str, file_name: str):
         """
-        This function is for testing purposes only and no practical use.
+        This function is for testing purposes only and has no practical use.
         """
         return f"read_parquet('s3://{bucket_name}/{file_name}')"
 
-    def get_tables_with_dates(self, bucket_name: str, dates: list[str]) -> str:
+    def get_table_path_with_dates(self, bucket_name: str, dates: list[str]) -> str:
         """
         Generate a list of S3 paths for the given date range.
         Expects dates in 'YYYY/MM/DD' format.
@@ -52,11 +52,11 @@ class DuckDBManager:
                 s3_paths.append(f"s3://{bucket_name}/{year}/{month}/{day}/*.parquet")
         
         if not s3_paths:
-            raise ValueError("No tables found for the given dates")
+            raise ValueError("No table path found for the given dates")
 
         return f"read_parquet({s3_paths}, union_by_name=True)"
 
-    def get_tables_with_range(self, bucket_name: str, start_date: str, end_date: str) -> str:
+    def get_table_path_with_range(self, bucket_name: str, start_date: str, end_date: str) -> str:
         """
         Generate a list of S3 paths for the given date range.
         Expects dates in 'YYYY/MM/DD' format.
@@ -72,4 +72,4 @@ class DuckDBManager:
             dates.append(current_date.strftime("%Y/%m/%d"))
             current_date += timedelta(days=1)
         
-        return self.get_tables_with_dates(bucket_name, dates)
+        return self.get_table_path_with_dates(bucket_name, dates)
