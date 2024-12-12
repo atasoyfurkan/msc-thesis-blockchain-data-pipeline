@@ -3,7 +3,7 @@ import logging
 from data_ingestion.price_data.fetcher import PriceDataFetcher
 from data_storage.minio.write_client import MinioWriteClient
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logging.basicConfig(level=os.getenv("LOGGING_LEVEL", "INFO"), format="%(asctime)s [%(levelname)s] %(message)s")
 
 def main():
     """Main function to initialize and start the mempool data fetcher."""

@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException, Response, Query, Depends
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logging.basicConfig(level=os.getenv("LOGGING_LEVEL", "INFO"), format="%(asctime)s [%(levelname)s] %(message)s")
 
 # Load environment variables
 MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT")

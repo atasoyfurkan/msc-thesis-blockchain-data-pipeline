@@ -2,7 +2,7 @@ from data_access.api_client.client import DataPipelineClient
 import logging
 import os
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logging.basicConfig(level=os.getenv("LOGGING_LEVEL", "INFO"), format="%(asctime)s [%(levelname)s] %(message)s")
 
 def main():
     API_ENDPOINT = os.getenv("API_ENDPOINT")
