@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mempool-fetcher
+  namespace: pipeline
+  labels:
+    app: mempool-fetcher
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mempool-fetcher
+  template:
+    metadata:
+      labels:
+        app: mempool-fetcher
+    spec:
+      containers:
+      - name: mempool-fetcher
+        image: atasoy/pipeline-mempool-fetcher:latest
+        env:
+          - name: LOGGING_LEVEL
+            value: "INFO"
+          - name: NODE_WS_URL
+            value: "wss://mainnet.infura.io/ws/v3/7b544e0e9f0a46a5bbda136d85b85f44"
+          - name: NODE_HTTP_URL
+            value: "https://mainnet.infura.io/v3/d7555ddea84f47eca9b5d0c94e5966f1"
+          - name: FETCH_DETAIL_BATCH_SIZE
+            value: "10"
+          - name: SAVE_BATCH_SIZE
+            value: "1000"
+          - name: MINIO_BUCKET
+            value: "mempool-data"
+          - name: MINIO_ENDPOINT
+            valueFrom:
+              configMapKeyRef:
+                name: pipeline-env
+                key: minio-endpoint
+          - name: MINIO_ROOT_USER
+            valueFrom:
+              secretKeyRef:
+                name: pipeline-secret
+                key: minio-root-user
+          - name: MINIO_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: pipeline-secret
+                key: minio-root-password

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pipeline-env
+  namespace: pipeline
+data:
+  minio-endpoint: "minio:80"
+  

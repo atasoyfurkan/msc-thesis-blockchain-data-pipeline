@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: price-data-fetcher
+  namespace: pipeline
+  labels:
+    app: price-data-fetcher
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: price-data-fetcher
+  template:
+    metadata:
+      labels:
+        app: price-data-fetcher
+    spec:
+      containers:
+      - name: price-data-fetcher
+        image: atasoy/pipeline-price-data-fetcher:latest
+        env:
+          - name: LOGGING_LEVEL
+            value: "INFO"
+          - name: BINANCE_URL
+            value: "https://api.binance.com/api/v3/ticker/24hr"
+          - name: BINANCE_SYMBOL
+            value: "ETHUSDT"
+          - name: PRICE_DATA_SOURCE
+            value: "binance"
+          - name: FETCH_INTERVAL_SECOND
+            value: "1"
+          - name: SAVE_BATCH_SIZE
+            value: "1000"
+          - name: MINIO_BUCKET
+            value: "price-data"
+          - name: MINIO_ENDPOINT
+            valueFrom:
+              configMapKeyRef:
+                name: pipeline-env
+                key: minio-endpoint
+          - name: MINIO_ROOT_USER
+            valueFrom:
+              secretKeyRef:
+                name: pipeline-secret
+                key: minio-root-user
+          - name: MINIO_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: pipeline-secret
+                key: minio-root-password

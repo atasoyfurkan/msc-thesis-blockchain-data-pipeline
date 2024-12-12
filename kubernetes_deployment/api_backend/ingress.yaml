@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-backend
+  namespace: pipeline
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - api-backend.pipeline.atasoyfurkan.live
+    secretName: cluster-issuer-secret-api-backend
+  rules:
+  - host: api-backend.pipeline.atasoyfurkan.live
+    http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: api-backend 
+            port:
+              number: 80 
