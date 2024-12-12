@@ -11,16 +11,16 @@ class DataPipelineClient:
     This client handles querying data and retrieving parquet files.
     """
 
-    def __init__(self, base_url: str):
+    def __init__(self):
         """
         Initialize the client with the base URL of the API.
         :param base_url: The base URL of the FastAPI server (e.g., 'http://localhost:8000')
         """
-        self.base_url = base_url.rstrip('/')
+        self.base_url = os.getenv("PIPELINE_API_BACKEND_URL")
         self.token = os.getenv("JUPYTERHUB_API_TOKEN")
 
-        if not self.token:
-            raise ValueError("JUPYTERHUB_API_TOKEN environment variable is not set")
+        if not self.token or not self.base_url:
+            raise ValueError("JUPYTERHUB_API_TOKEN or PIPELINE_API_BACKEND_URL environment variable is not set")
     
     def _get_auth_headers(self) -> dict:
         """Get the authorization headers for API requests."""
