@@ -1,21 +1,30 @@
-# Dockerfile
-
-FROM python:3.9-slim
-
-# Install dependencies
-RUN pip install minio duckdb pandas fastapi uvicorn pyarrow requests
+# Stage 1: Build Python Dependencies
+FROM python:3.9-slim as build
 
 WORKDIR /app
-# copy other modules
-COPY ../.. .
-# copy main.py
-COPY services/api_backend/main.py .
+RUN pip install minio duckdb pandas fastapi uvicorn pyarrow requests
 
-# set root directory
+# Stage 2: Final Image
+FROM python:3.9-slim
+
+# Copy installed dependencies from the build stage
+COPY --from=build /usr/local/lib/python3.9/site-packages /usr/local/lib/python3.9/site-packages
+COPY --from=build /usr/local/bin /usr/local/bin
+
+WORKDIR /app
+# Copy application code
+# COPY ../../data_access ./data_access
+# COPY ../../data_ingestion ./data_ingestion
+# COPY ../../data_storage ./data_storage
+COPY ../.. .
+COPY services/api_backend/main.py ./main.py
+
+# Set environment variables
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 
+# Expose port
 EXPOSE 8000
 
-# Command to run the script
+# Command to run the app
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

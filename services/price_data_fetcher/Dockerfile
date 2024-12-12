@@ -1,9 +1,15 @@
-# Dockerfile
+# Stage 1: Build Python Dependencies
+FROM python:3.9-slim as build
 
+WORKDIR /app
+RUN pip install pandas pyarrow requests minio
+
+# Stage 2: Final Image
 FROM python:3.9-slim
 
-# Install dependencies
-RUN pip install pandas pyarrow requests minio
+# Copy installed dependencies from the build stage
+COPY --from=build /usr/local/lib/python3.9/site-packages /usr/local/lib/python3.9/site-packages
+COPY --from=build /usr/local/bin /usr/local/bin
 
 WORKDIR /app
 # copy other modules
