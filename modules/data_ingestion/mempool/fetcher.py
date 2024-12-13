@@ -4,8 +4,8 @@ import requests
 import websocket
 from datetime import datetime
 from typing import Optional
-from data_storage.minio.write_client import MinioWriteClient
-from data_ingestion.base_fetcher import DataFetcherBase
+from modules.data_storage.minio.write_client import MinioWriteClient
+from modules.data_ingestion.base_fetcher import DataFetcherBase
 
 class MempoolDataFetcher(DataFetcherBase):
     """Fetches Ethereum mempool transaction data and saves transaction details to MinIO."""

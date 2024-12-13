@@ -1,6 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
-from data_storage.minio.write_client import MinioWriteClient
+from modules.data_storage.minio.write_client import MinioWriteClient
 
 class DataFetcherBase(ABC):
     """Base class for data fetchers with common functionality."""

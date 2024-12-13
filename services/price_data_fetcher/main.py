@@ -1,7 +1,7 @@
 import os
 import logging
-from data_ingestion.price_data.fetcher import PriceDataFetcher
-from data_storage.minio.write_client import MinioWriteClient
+from modules.data_ingestion.price_data.fetcher import PriceDataFetcher
+from modules.data_storage.minio.write_client import MinioWriteClient
 
 logging.basicConfig(level=os.getenv("LOGGING_LEVEL", "INFO"), format="%(asctime)s [%(levelname)s] %(message)s")
 

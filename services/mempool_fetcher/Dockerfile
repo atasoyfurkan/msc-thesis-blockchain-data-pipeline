@@ -13,9 +13,9 @@ COPY --from=build /usr/local/bin /usr/local/bin
 
 WORKDIR /app
 # copy other modules
-COPY ../.. .
+COPY modules modules
 # copy main.py
-COPY services/mempool_fetcher/main.py .
+COPY services/mempool_fetcher/main.py main.py
 
 # set root directory
 ENV PYTHONPATH=/app

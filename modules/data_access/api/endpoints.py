@@ -1,6 +1,6 @@
-from data_access.duckdb.manager import DuckDBManager
-from data_storage.minio.read_client import MinioReadClient
-from data_access.api.auth import authenticate_user
+from modules.data_access.duckdb.manager import DuckDBManager
+from modules.data_storage.minio.read_client import MinioReadClient
+from modules.data_access.api.auth import authenticate_user
 import os
 from io import BytesIO
 from typing import Optional

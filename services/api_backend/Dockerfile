@@ -13,11 +13,8 @@ COPY --from=build /usr/local/bin /usr/local/bin
 
 WORKDIR /app
 # Copy application code
-# COPY ../../data_access ./data_access
-# COPY ../../data_ingestion ./data_ingestion
-# COPY ../../data_storage ./data_storage
-COPY ../.. .
-COPY services/api_backend/main.py ./main.py
+COPY modules modules
+COPY services/api_backend/main.py main.py
 
 # Set environment variables
 ENV PYTHONPATH=/app

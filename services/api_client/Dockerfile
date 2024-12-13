@@ -14,8 +14,8 @@ COPY --from=build /usr/local/bin /usr/local/bin
 
 WORKDIR /app
 # Copy application code
-COPY ../.. .
-COPY services/api_client/main.py .
+COPY modules modules
+COPY services/api_client/main.py main.py
 
 ENV PYTHONPATH=/app
 

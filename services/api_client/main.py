@@ -1,13 +1,11 @@
-from data_access.api_client.client import DataPipelineClient
+from modules.data_access.api_client.client import DataPipelineClient
 import logging
 import os
 
 logging.basicConfig(level=os.getenv("LOGGING_LEVEL", "INFO"), format="%(asctime)s [%(levelname)s] %(message)s")
 
 def main():
-    API_ENDPOINT = os.getenv("API_ENDPOINT")
-
-    client = DataPipelineClient(API_ENDPOINT)
+    client = DataPipelineClient()
 
     # List buckets
     buckets = client.list_buckets()

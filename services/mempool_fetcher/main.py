@@ -1,7 +1,7 @@
 import os
 import logging
-from data_ingestion.mempool.fetcher import MempoolDataFetcher
-from data_storage.minio.write_client import MinioWriteClient
+from modules.data_ingestion.mempool.fetcher import MempoolDataFetcher
+from modules.data_storage.minio.write_client import MinioWriteClient
 
 logging.basicConfig(level=os.getenv("LOGGING_LEVEL", "INFO"), format="%(asctime)s [%(levelname)s] %(message)s")
 
