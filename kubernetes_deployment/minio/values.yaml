@@ -233,9 +233,14 @@ tenant:
   ###
   # Configures a Prometheus-compatible scraping endpoint at the specified port.
   metrics:
-    enabled: false
-    port: 9000
-    protocol: http
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      namespace: monitoring               # Namespace where Prometheus is running
+      labels:
+        release: monitoring               # Match Prometheus Operator release name
+      interval: 30s                       # Scrape interval
+  
   ###
   # Configures external certificate settings for the Tenant.
   certificate:
@@ -334,7 +339,7 @@ tenant:
   serviceAccountName: ""
   ###
   # Directs the Operator to add the Tenant's metric scrape configuration to an existing Kubernetes Prometheus deployment managed by the Prometheus Operator.
-  prometheusOperator: false
+  prometheusOperator: true
   ###
   # Configure pod logging configuration for the MinIO Tenant.
   #
@@ -355,7 +360,13 @@ tenant:
   serviceMetadata: { }
   ###
   # Add environment variables to be set in MinIO container (https://github.com/minio/minio/tree/master/docs/config)
-  env: [ ]
+  env:
+    - name: MINIO_PROMETHEUS_AUTH_TYPE
+      value: "public"
+    - name: MINIO_PROMETHEUS_URL
+      value: "http://prometheus-operated.monitoring.svc.cluster.local:9090"
+    - name: MINIO_PROMETHEUS_JOB_ID
+      value: "minio-cluster"
   ###
   # PriorityClassName indicates the Pod priority and hence importance of a Pod relative to other Pods.
   # This is applied to MinIO pods only.
@@ -495,8 +506,12 @@ ingress:
     enabled: true
     ingressClassName: "nginx"
     labels: { }
-    annotations: { }
-    tls: [ ]
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod  # Enables cert-manager for TLS certificates
+    tls:
+      - hosts:
+          - minio-console.pipeline.atasoyfurkan.live
+        secretName: minio-console-tls  # TLS secret name for HTTPS
     host: minio-console.pipeline.atasoyfurkan.live
     path: /
     pathType: Prefix

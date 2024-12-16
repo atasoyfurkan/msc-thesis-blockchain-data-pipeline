@@ -1,0 +1,47 @@
+prometheus:
+  prometheusSpec:
+    additionalScrapeConfigs:
+      - job_name: 'minio-cluster'
+        metrics_path: /minio/v2/metrics/cluster
+        scheme: http
+        static_configs:
+          - targets:
+              - myminio-hl.pipeline.svc.cluster.local:9000 
+      - job_name: 'minio-bucket'
+        metrics_path: /minio/v2/metrics/bucket
+        scheme: http
+        static_configs:
+          - targets:
+              - myminio-hl.pipeline.svc.cluster.local:9000 
+      - job_name: "jupyterhub"
+        metrics_path: /hub/metrics
+        static_configs:
+          - targets:
+              - hub.atasoyfurkan.live  
+        authorization:
+          type: Bearer
+          credentials: c30b241bd9ae46cba2f6e2a8dc023ab7
+
+grafana:
+  enabled: true
+  ingress:
+    enabled: true
+    ingressClassName: nginx                # Use your ingress class (e.g., nginx, traefik)
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod  # For TLS if using cert-manager
+    hosts:
+      - grafana.pipeline.atasoyfurkan.live                # Replace with your domain name
+    tls:                                   # Optional: Enable TLS
+      - hosts:
+          - grafana.pipeline.atasoyfurkan.live            # Replace with your domain name
+        secretName: grafana-tls-secret     # Secret for TLS certificate
+  adminUser: admin                         # Default admin username
+  adminPassword: EEnDK0j0Fz_QmxG_oDdWQ_O552PbNfXQvwDUAfh-2nY             # Default admin password
+
+kube-state-metrics:
+  metricLabelsAllowlist:
+    # to select jupyterhub component pods and get the hub usernames
+    - pods=[app,component,hub.jupyter.org/username]
+    # allowing all labels is probably fine for nodes, since they don't churn much, unlike pods
+    - nodes=[*]
+    # - services=[*]

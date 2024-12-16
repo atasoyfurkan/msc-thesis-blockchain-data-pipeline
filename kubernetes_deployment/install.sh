@@ -51,3 +51,12 @@ docker buildx build --platform linux/amd64 \
   --push
 ## Apply kubernetes manifests
 kubectl apply -f price_data_fetcher/deployment.yaml
+
+# Install prometheus
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+helm upgrade --install \
+    --namespace monitoring \
+    --create-namespace \
+    --values monitoring/values.yaml \
+    monitoring prometheus-community/kube-prometheus-stack 
