@@ -1,0 +1,610 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jupyterhub-user-diagnostic-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"  # This label tells Grafana to load these dashboards automatically
+data:
+  jupyterhub-user-diagnostic-dashboard.json: |
+    {
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": {
+              "type": "grafana",
+              "uid": "-- Grafana --"
+            },
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 0,
+      "id": 32,
+      "links": [],
+      "panels": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Mixed --"
+          },
+          "description": "Per-user per-server memory usage\n",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "stepAfter",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 12,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "id": 1,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$PROMETHEUS_DS"
+              },
+              "expr": "sum(\n  # exclude name=\"\" because the same container can be reported\n  # with both no name and `name=k8s_...`,\n  # in which case sum() by (pod) reports double the actual metric\n  container_memory_working_set_bytes{name!=\"\", instance=~\"$instance\"}\n  * on (namespace, pod) group_left(container)\n  group(\n      kube_pod_labels{label_app=\"jupyterhub\", label_component=\"singleuser-server\", namespace=~\"$hub\", pod=~\"$user_pod\"}\n  ) by (pod, namespace)\n) by (pod, namespace)\n",
+              "legendFormat": "{{ pod }} - ({{ namespace }})",
+              "refId": "A"
+            }
+          ],
+          "title": "Memory Usage",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Mixed --"
+          },
+          "description": "Per-user per-server CPU usage\n",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "stepAfter",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "percentunit"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 12,
+            "w": 24,
+            "x": 0,
+            "y": 12
+          },
+          "id": 2,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$PROMETHEUS_DS"
+              },
+              "expr": "sum(\n  # exclude name=\"\" because the same container can be reported\n  # with both no name and `name=k8s_...`,\n  # in which case sum() by (pod) reports double the actual metric\n  irate(container_cpu_usage_seconds_total{name!=\"\", instance=~\"$instance\"}[5m])\n  * on (namespace, pod) group_left(container)\n  group(\n      kube_pod_labels{label_app=\"jupyterhub\", label_component=\"singleuser-server\", namespace=~\"$hub\", pod=~\"$user_pod\"}\n  ) by (pod, namespace)\n) by (pod, namespace)\n",
+              "legendFormat": "{{ pod }} - ({{ namespace }})",
+              "refId": "A"
+            }
+          ],
+          "title": "CPU Usage",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Mixed --"
+          },
+          "description": "Per user home directory size, when using a shared home directory.\n\nRequires https://github.com/yuvipanda/prometheus-dirsize-exporter to\nbe set up.\n\nSimilar to server pod names, user names will be *encoded* here\nusing the escapism python library (https://github.com/minrk/escapism).\nYou can unencode them with the following python snippet:\n\nfrom escapism import unescape\nunescape('<escaped-username>', '-')\n",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "stepAfter",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 12,
+            "w": 24,
+            "x": 0,
+            "y": 24
+          },
+          "id": 3,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$PROMETHEUS_DS"
+              },
+              "expr": "max(\n  dirsize_total_size_bytes{namespace=\"$hub\"}\n) by (directory, namespace)\n",
+              "legendFormat": "{{ directory }} - ({{ namespace }})",
+              "refId": "A"
+            }
+          ],
+          "title": "Home Directory Usage (on shared home directories)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Mixed --"
+          },
+          "description": "Per-user per-server memory Requests\n",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "stepAfter",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 12,
+            "w": 24,
+            "x": 0,
+            "y": 36
+          },
+          "id": 4,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$PROMETHEUS_DS"
+              },
+              "expr": "sum(\n  kube_pod_container_resource_requests{resource=\"memory\", namespace=~\"$hub\", node=~\"$instance\"}\n) by (pod, namespace)\n",
+              "legendFormat": "{{ pod }} - ({{ namespace }})",
+              "refId": "A"
+            }
+          ],
+          "title": "Memory Requests",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Mixed --"
+          },
+          "description": "Per-user per-server CPU Requests\n",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "stepAfter",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "percentunit"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 12,
+            "w": 24,
+            "x": 0,
+            "y": 48
+          },
+          "id": 5,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$PROMETHEUS_DS"
+              },
+              "expr": "sum(\n  kube_pod_container_resource_requests{resource=\"cpu\", namespace=~\"$hub\", node=~\"$instance\"}\n) by (pod, namespace)\n",
+              "legendFormat": "{{ pod }} - ({{ namespace }})",
+              "refId": "A"
+            }
+          ],
+          "title": "CPU Requests",
+          "type": "timeseries"
+        }
+      ],
+      "preload": false,
+      "refresh": "",
+      "schemaVersion": 40,
+      "tags": [
+        "jupyterhub"
+      ],
+      "templating": {
+        "list": [
+          {
+            "current": {
+              "text": "Prometheus",
+              "value": "prometheus"
+            },
+            "hide": 1,
+            "name": "PROMETHEUS_DS",
+            "options": [],
+            "query": "prometheus",
+            "refresh": 1,
+            "type": "datasource"
+          },
+          {
+            "allValue": ".*",
+            "current": {
+              "text": "All",
+              "value": "$__all"
+            },
+            "datasource": {
+              "type": "prometheus",
+              "uid": "${PROMETHEUS_DS}"
+            },
+            "includeAll": true,
+            "multi": true,
+            "name": "hub",
+            "options": [],
+            "query": "label_values(kube_service_labels{service=\"hub\"}, namespace)",
+            "type": "query"
+          },
+          {
+            "allValue": ".*",
+            "current": {
+              "text": [
+                "All"
+              ],
+              "value": [
+                "$__all"
+              ]
+            },
+            "datasource": {
+              "type": "prometheus",
+              "uid": "${PROMETHEUS_DS}"
+            },
+            "includeAll": true,
+            "multi": true,
+            "name": "user_pod",
+            "options": [],
+            "query": "label_values(kube_pod_labels{label_app=\"jupyterhub\", label_component=\"singleuser-server\", namespace=~\"$hub\"}, pod)",
+            "type": "query"
+          },
+          {
+            "allValue": ".*",
+            "current": {
+              "text": [
+                "All"
+              ],
+              "value": [
+                "$__all"
+              ]
+            },
+            "datasource": {
+              "type": "prometheus",
+              "uid": "${PROMETHEUS_DS}"
+            },
+            "includeAll": true,
+            "multi": true,
+            "name": "instance",
+            "options": [],
+            "query": "label_values(kube_node_info, node)",
+            "type": "query"
+          }
+        ]
+      },
+      "time": {
+        "from": "now-2d",
+        "to": "now"
+      },
+      "timepicker": {},
+      "timezone": "utc",
+      "title": "JupyterHub User Diagnostics Dashboard",
+      "uid": "48def00b161d9dcd",
+      "version": 2,
+      "weekStart": ""
+    }

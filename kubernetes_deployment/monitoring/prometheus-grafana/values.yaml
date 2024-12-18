@@ -1,5 +1,12 @@
 prometheus:
   prometheusSpec:
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi # TODO: increase this when you move to production node
     additionalScrapeConfigs:
       - job_name: 'minio-cluster'
         metrics_path: /minio/v2/metrics/cluster
@@ -13,6 +20,12 @@ prometheus:
         static_configs:
           - targets:
               - myminio-hl.pipeline.svc.cluster.local:9000 
+      - job_name: 'minio-resource'
+        metrics_path: /minio/v2/metrics/resource
+        scheme: http
+        static_configs:
+          - targets:
+              - myminio-hl.pipeline.svc.cluster.local:9000
       - job_name: "jupyterhub"
         metrics_path: /hub/metrics
         static_configs:
@@ -37,6 +50,15 @@ grafana:
         secretName: grafana-tls-secret     # Secret for TLS certificate
   adminUser: admin                         # Default admin username
   adminPassword: EEnDK0j0Fz_QmxG_oDdWQ_O552PbNfXQvwDUAfh-2nY             # Default admin password
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      url: http://loki-gateway.monitoring.svc.cluster.local
+  dashboardsConfigMaps:
+    minio-bucket-dashboard: minio-bucket-dashboard
+    minio-cluster-dashboard: minio-cluster-dashboard
+    jupyterhub-dashboard: jupyterhub-dashboard
+    jupyterhub-user-diagnostic-dashboard: jupyterhub-user-diagnostic-dashboard
 
 kube-state-metrics:
   metricLabelsAllowlist:
