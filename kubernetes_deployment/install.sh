@@ -52,11 +52,29 @@ docker buildx build --platform linux/amd64 \
 ## Apply kubernetes manifests
 kubectl apply -f price_data_fetcher/deployment.yaml
 
-# Install prometheus
+# Install prometheus and grafana
+# TODO: increase storage for prometheus when you move to production node
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+kubectl apply -f monitoring/prometheus-grafana/dashboards/minio-bucket-dashboard-configmap.yaml
+kubectl apply -f monitoring/prometheus-grafana/dashboards/minio-cluster-dashboard-configmap.yaml
+kubectl apply -f monitoring/prometheus-grafana/dashboards/jupyterhub-dashboard-configmap.yaml
+helm upgrade --install \
+    --namespace monitoring \
+    --create-namespace \
+    --values monitoring/prometheus-grafana/values.yaml \
+    monitoring prometheus-community/kube-prometheus-stack 
+
+# Install loki and promtail
+helm repo add grafana https://grafana.github.io/helm-charts
 helm repo update
 helm upgrade --install \
     --namespace monitoring \
     --create-namespace \
-    --values monitoring/values.yaml \
-    monitoring prometheus-community/kube-prometheus-stack 
+    --values monitoring/loki-promtail/values-loki.yaml \
+    loki grafana/loki
+helm upgrade --install \
+    --namespace monitoring \
+    --create-namespace \
+    --values monitoring/loki-promtail/values-promtail.yaml \
+    promtail grafana/promtail
