@@ -54,7 +54,7 @@ class MempoolDataFetcher(DataFetcherBase):
             response = requests.post(self.http_url, json=payload)
             response.raise_for_status()
             for tx in response.json():
-                if tx.get("result"):
+                if "result" in tx:
                     transaction_detail = self._parse_transaction(tx["result"])
                     logging.debug(f"Fetched transaction detail: {transaction_detail}")
                     self.data_batch.append(transaction_detail)
@@ -70,7 +70,8 @@ class MempoolDataFetcher(DataFetcherBase):
             "to": tx.get("to"),
             "value": str(int(tx["value"], 16)),
             "gas": int(tx["gas"], 16),
-            "gas_price": int(tx["gasPrice"], 16),
+            "max_fee_per_gas": int(tx["maxFeePerGas"], 16) if "maxFeePerGas" in tx else None,
+            "max_priority_fee_per_gas": int(tx["maxPriorityFeePerGas"], 16) if "maxPriorityFeePerGas" in tx else None,
             "nonce": int(tx["nonce"], 16),
             "input": tx["input"],
             "fetched_at": datetime.now().isoformat()
