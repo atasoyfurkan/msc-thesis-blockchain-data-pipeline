@@ -21,7 +21,7 @@ loki:
 
 minio:
   enabled: true
-      
+
 deploymentMode: SingleBinary
 
 singleBinary:
@@ -53,3 +53,6 @@ bloomCompactor:
   replicas: 0
 bloomGateway:
   replicas: 0
+
+metrics:
+  enabled: true

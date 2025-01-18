@@ -34,6 +34,15 @@ prometheus:
         authorization:
           type: Bearer
           credentials: c30b241bd9ae46cba2f6e2a8dc023ab7
+      - job_name: 'loki'
+        metrics_path: /metrics
+        static_configs:
+          - targets: ['loki.monitoring.svc.cluster.local:3100']
+      - job_name: 'loki-minio-cluster'
+        metrics_path: /minio/v2/metrics/cluster
+        static_configs:
+          - targets: 
+            - 'loki-minio-svc.monitoring.svc.cluster.local:9000'
 
 grafana:
   enabled: true
