@@ -19,6 +19,8 @@ class MempoolDataFetcher(DataFetcherBase):
 
     def on_message(self, ws, message: str):
         """Handle incoming WebSocket messages."""
+        logging.debug(f"Received websocket message: {message}")
+        
         transaction_hash = self._extract_transaction_hash(message)
         if transaction_hash:
             self.transaction_hashes.append(transaction_hash)
@@ -37,11 +39,24 @@ class MempoolDataFetcher(DataFetcherBase):
         try:
             data = json.loads(message)
 
+            if not isinstance(data, dict):
+                logging.warning(f"Invalid message format: {data}")
+                return None
+
             if "error" in data:
                 logging.error(f"Error response: {data['error']}")
                 return None
+            
+            if "params" not in data:
+                logging.warning(f"Missing 'params' in data: {data}")
+                return None
 
-            return data.get("params", {}).get("result")
+            params = data["params"]
+            if not isinstance(params, dict) or "result" not in params:
+                logging.warning(f"Missing 'result' in params: {params}")
+                return None
+            
+            return params["result"]
         except json.JSONDecodeError as e:
             logging.error(f"Failed to decode message: {e}")
             return None
@@ -53,8 +68,14 @@ class MempoolDataFetcher(DataFetcherBase):
         try:
             response = requests.post(self.http_url, json=payload)
             response.raise_for_status()
-            for tx in response.json():
-                if "result" in tx:
+            response_json = response.json()
+
+            if not isinstance(response_json, list):
+                logging.warning(f"Invalid response format for fetching transaction detail: {response_json}")
+                return
+
+            for tx in response_json:
+                if isinstance(tx, dict) and "result" in tx and isinstance(tx["result"], dict):
                     transaction_detail = self._parse_transaction(tx["result"])
                     logging.debug(f"Fetched transaction detail: {transaction_detail}")
                     self.data_batch.append(transaction_detail)

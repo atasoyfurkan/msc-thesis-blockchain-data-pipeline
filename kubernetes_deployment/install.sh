@@ -23,7 +23,7 @@ kubectl apply -f shared_secret.yaml
 # Deploy api-backend
 ## Build and push docker image
 docker buildx build --platform linux/amd64 \
-  -t atasoy/pipeline-api-backend:latest \
+  -t atasoy/pipeline-api-backend:v1.0 \
   --file ../services/api_backend/Dockerfile \
   ../ \
   --push
@@ -35,7 +35,7 @@ kubectl apply -f api_backend/ingress.yaml
 # Deploy mempool-fetcher
 ## Build and push docker image
 docker buildx build --platform linux/amd64 \
-  -t atasoy/pipeline-mempool-fetcher:latest \
+  -t atasoy/pipeline-mempool-fetcher:v1.5 \
   --file ../services/mempool_fetcher/Dockerfile \
   ../ \
   --push
@@ -45,7 +45,7 @@ kubectl apply -f mempool_fetcher/deployment.yaml
 # Deploy price_data-fetcher
 ## Build and push docker image
 docker buildx build --platform linux/amd64 \
-  -t atasoy/pipeline-price-data-fetcher:latest \
+  -t atasoy/pipeline-price-data-fetcher:v1.0 \
   --file ../services/price_data_fetcher/Dockerfile \
   ../ \
   --push

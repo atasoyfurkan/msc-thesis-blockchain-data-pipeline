@@ -17,14 +17,14 @@ spec:
     spec:
       containers:
       - name: mempool-fetcher
-        image: atasoy/pipeline-mempool-fetcher:latest
+        image: atasoy/pipeline-mempool-fetcher:v1.5
         env:
           - name: LOGGING_LEVEL
             value: "INFO"
           - name: NODE_WS_URL
-            value: "wss://mainnet.infura.io/ws/v3/7b544e0e9f0a46a5bbda136d85b85f44"
+            value: "ws://131.159.14.109:8546"
           - name: NODE_HTTP_URL
-            value: "https://mainnet.infura.io/v3/d7555ddea84f47eca9b5d0c94e5966f1"
+            value: "http://131.159.14.109:8545"
           - name: FETCH_DETAIL_BATCH_SIZE
             value: "10"
           - name: SAVE_BATCH_SIZE
