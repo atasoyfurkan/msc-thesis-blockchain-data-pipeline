@@ -26,7 +26,7 @@ def main():
         endpoint=MINIO_ENDPOINT,
         access_key=MINIO_ROOT_USER,
         secret_key=MINIO_ROOT_PASSWORD,
-        bucket_name=MINIO_BUCKET
+        default_bucket_name=MINIO_BUCKET
     )
 
     price_data_fetcher = PriceDataFetcher(

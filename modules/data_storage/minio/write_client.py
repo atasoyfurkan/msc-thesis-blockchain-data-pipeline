@@ -4,43 +4,55 @@ from minio.error import S3Error
 import pandas as pd
 import logging
 from datetime import datetime
+from typing import Optional
 
 class MinioWriteClient:
     """Handles interactions with MinIO for storing Parquet files."""
 
-    def __init__(self, endpoint: str, access_key: str, secret_key: str, bucket_name: str):
+    def __init__(self, endpoint: str, access_key: str, secret_key: str, default_bucket_name: Optional[str] = None):
         self.client = Minio(
             endpoint,
             access_key=access_key,
             secret_key=secret_key,
             secure=False
         )
-        self.bucket_name = bucket_name
-        self._ensure_bucket_exists()
+        if default_bucket_name:
+            self.default_bucket_name = default_bucket_name
+            self._ensure_default_bucket_exists()
 
-    def _ensure_bucket_exists(self):
+    def _ensure_default_bucket_exists(self):
         """Ensure that the bucket exists, if not, create it."""
-        if not self.client.bucket_exists(self.bucket_name):
-            self.client.make_bucket(self.bucket_name)
-            logging.info(f"Created bucket: {self.bucket_name}")
+        if not self.client.bucket_exists(self.default_bucket_name):
+            self.client.make_bucket(self.default_bucket_name)
+            logging.info(f"Created default bucket: {self.default_bucket_name}")
 
-    def _upload_file(self, file_path: Path, object_name: str):
+    def _get_bucket_name(self, bucket_name: Optional[str] = None) -> str:
+        """Get the bucket name, using the default if not specified."""
+        if not bucket_name and not self.default_bucket_name:
+            raise ValueError("No default bucket specified. Bucket name must be provided.")
+
+        return bucket_name or self.default_bucket_name
+
+    def _upload_file(self, file_path: Path, object_name: str, bucket_name: Optional[str] = None):
         """Upload a file to the specified bucket."""
+        bucket_name = self._get_bucket_name(bucket_name)
         try:
             self.client.fput_object(
-                self.bucket_name,
+                bucket_name,
                 object_name,
                 str(file_path)
             )
-            logging.info(f"Uploaded {object_name} to MinIO bucket {self.bucket_name}")
+            logging.info(f"Uploaded {object_name} to MinIO bucket {bucket_name}")
         except S3Error as e:
             logging.error(f"Failed to upload to MinIO: {e}")
 
-    def upload_table_as_parquet(self, table: list[dict]):
+    def upload_table_as_parquet(self, table: list[dict], bucket_name: Optional[str] = None):
         """
         Saves the DataFrame as a Parquet file and uploads it to MinIO
         using a structured directory format.
         """
+        bucket_name = self._get_bucket_name(bucket_name)
+
         df = pd.DataFrame(table)
         # Generate the current timestamp
         now = datetime.now()
@@ -61,7 +73,7 @@ class MinioWriteClient:
             df.to_parquet(temp_file, index=False)
 
             # Upload the Parquet file to MinIO
-            self._upload_file(temp_file, minio_path)
+            self._upload_file(temp_file, minio_path, bucket_name)
 
             # Remove the local file after uploading
             temp_file.unlink()

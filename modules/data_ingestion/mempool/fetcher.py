@@ -2,10 +2,10 @@ import json
 import logging
 import requests
 import websocket
-from datetime import datetime
 from typing import Optional
 from modules.data_storage.minio.write_client import MinioWriteClient
 from modules.data_ingestion.base_fetcher import DataFetcherBase
+from modules.data_ingestion.parsers import parse_transaction
 
 class MempoolDataFetcher(DataFetcherBase):
     """Fetches Ethereum mempool transaction data and saves transaction details to MinIO."""
@@ -16,6 +16,7 @@ class MempoolDataFetcher(DataFetcherBase):
         self.http_url = http_url
         self.fetch_detail_batch_size = fetch_detail_batch_size
         self.transaction_hashes = []
+        self.data_batch: list[dict] = []
 
     def on_message(self, ws, message: str):
         """Handle incoming WebSocket messages."""
@@ -29,10 +30,10 @@ class MempoolDataFetcher(DataFetcherBase):
             self._fetch_transaction_details()
             self.transaction_hashes.clear()
 
-        self.log_progress()
+        self.log_progress(data_batch=self.data_batch)
 
         if len(self.data_batch) >= self.save_batch_size:
-            self.save_to_minio()
+            self.data_batch = self.save_to_minio(data_batch=self.data_batch)
 
     def _extract_transaction_hash(self, message: str) -> Optional[str]:
         """Extracts the transaction hash from the WebSocket message."""
@@ -80,7 +81,7 @@ class MempoolDataFetcher(DataFetcherBase):
                 logging.debug(f"Fetched transaction detail: {tx}")
 
                 if isinstance(tx, dict) and "result" in tx and isinstance(tx["result"], dict):
-                    transaction_detail = self._parse_transaction(tx["result"], latest_block)
+                    transaction_detail = parse_transaction(tx["result"], latest_block=latest_block)
                     logging.debug(f"Parsed transaction detail: {transaction_detail}")
                     self.data_batch.append(transaction_detail)
         except requests.RequestException as e:
@@ -102,35 +103,6 @@ class MempoolDataFetcher(DataFetcherBase):
             logging.error(f"Failed to fetch latest block: {e}")
             return None
 
-    @staticmethod
-    def _parse_transaction(tx: dict, latest_block: Optional[dict]) -> dict:
-        """Extracts relevant fields from transaction data."""
-        transaction = {
-            "hash": tx["hash"],
-            "from": tx["from"],
-            "to": tx.get("to"),
-            "type": int(tx["type"], 16) if "type" in tx else None,
-            "chain_id": int(tx["chainId"], 16) if "chainId" in tx else None,
-            "value": str(int(tx["value"], 16)),
-            "gas": int(tx["gas"], 16),
-            "gas_price": int(tx["gasPrice"], 16) if "gasPrice" in tx else None,
-            "max_fee_per_gas": int(tx["maxFeePerGas"], 16) if "maxFeePerGas" in tx else None,
-            "max_priority_fee_per_gas": int(tx["maxPriorityFeePerGas"], 16) if "maxPriorityFeePerGas" in tx else None,
-            "nonce": int(tx["nonce"], 16),
-            "input": tx["input"],
-            "fetched_at": datetime.now().isoformat()
-        }
-        
-        # Calculate effective gas price
-        if latest_block and transaction["max_fee_per_gas"] and transaction["max_priority_fee_per_gas"]:
-            base_fee_per_gas = int(latest_block["baseFeePerGas"], 16)
-            transaction["latest_block_base_fee_per_gas"] = base_fee_per_gas
-            transaction["estimated_effective_gas_price"] = min(
-                transaction["max_fee_per_gas"],
-                transaction["max_priority_fee_per_gas"] + base_fee_per_gas
-            )
-        
-        return transaction
 
     def on_error(self, ws, error: str):
         """Handles WebSocket errors."""
