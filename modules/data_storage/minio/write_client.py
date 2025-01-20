@@ -66,7 +66,7 @@ class MinioWriteClient:
         year = now.strftime('%Y')
         month = now.strftime('%m')
         day = now.strftime('%d')
-        time_str = now.strftime('%H%M%S')
+        time_str = now.strftime('%H%M%S') + f"{now.microsecond // 1000:03d}"
         filename = f"{time_str}.parquet"
         minio_path = f"{year}/{month}/{day}/{filename}"
 

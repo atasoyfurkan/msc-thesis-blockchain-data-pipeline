@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: price-data-fetcher
-        image: atasoy/pipeline-price-data-fetcher:v1.0
+        image: atasoy/pipeline-price-data-fetcher:v1.1
         env:
           - name: LOGGING_LEVEL
             value: "INFO"

@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: mempool-fetcher
-        image: atasoy/pipeline-mempool-fetcher:v1.5
+        image: atasoy/pipeline-mempool-fetcher:v1.6
         env:
           - name: LOGGING_LEVEL
             value: "INFO"
