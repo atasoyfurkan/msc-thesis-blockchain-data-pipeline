@@ -26,6 +26,17 @@ services:
       - minio
     restart: unless-stopped
 
+  block_fetcher:
+    build:
+      context: .
+      dockerfile: ./services/block_fetcher/Dockerfile
+    env_file: 
+      - ./services/block_fetcher/.env
+      - ./services/minio/.env
+    depends_on:
+      - minio
+    restart: unless-stopped
+
   price_data_fetcher:
     build:
       context: .

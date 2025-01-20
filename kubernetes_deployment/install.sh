@@ -42,6 +42,16 @@ docker buildx build --platform linux/amd64 \
 ## Apply kubernetes manifests
 kubectl apply -f mempool_fetcher/deployment.yaml
 
+# Deploy block-fetcher
+## Build and push docker image
+docker buildx build --platform linux/amd64 \
+  -t atasoy/pipeline-block-fetcher:v1.0 \
+  --file ../services/block_fetcher/Dockerfile \
+  ../ \
+  --push
+## Apply kubernetes manifests
+kubectl apply -f block_fetcher/deployment.yaml
+
 # Deploy price_data-fetcher
 ## Build and push docker image
 docker buildx build --platform linux/amd64 \

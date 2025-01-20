@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: block-fetcher
+  namespace: pipeline
+  labels:
+    app: block-fetcher
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: block-fetcher
+  template:
+    metadata:
+      labels:
+        app: block-fetcher
+    spec:
+      containers:
+      - name: block-fetcher
+        image: atasoy/pipeline-block-fetcher:v1.0
+        env:
+          - name: LOGGING_LEVEL
+            value: "INFO"
+          - name: NODE_WS_URL
+            value: "ws://131.159.14.109:8546"
+          - name: NODE_HTTP_URL
+            value: "http://131.159.14.109:8545"
+          - name: SAVE_BATCH_SIZE
+            value: "10"
+          - name: MINIO_BUCKET_BLOCK
+            value: "block-data"
+          - name: MINIO_BUCKET_BLOCK_HEADER
+            value: "block-header-data"
+          - name: MINIO_ENDPOINT
+            valueFrom:
+              configMapKeyRef:
+                name: pipeline-env
+                key: minio-endpoint
+          - name: MINIO_ROOT_USER
+            valueFrom:
+              secretKeyRef:
+                name: pipeline-secret
+                key: minio-root-user
+          - name: MINIO_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: pipeline-secret
+                key: minio-root-password

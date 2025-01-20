@@ -16,22 +16,27 @@ class MinioWriteClient:
             secret_key=secret_key,
             secure=False
         )
+        self.cached_buckets: set[str] = set(self.client.list_buckets())
         if default_bucket_name:
             self.default_bucket_name = default_bucket_name
-            self._ensure_default_bucket_exists()
+            self._ensure_bucket_exists(bucket_name=self.default_bucket_name)
 
-    def _ensure_default_bucket_exists(self):
+    def _ensure_bucket_exists(self, bucket_name: str):
         """Ensure that the bucket exists, if not, create it."""
-        if not self.client.bucket_exists(self.default_bucket_name):
-            self.client.make_bucket(self.default_bucket_name)
-            logging.info(f"Created default bucket: {self.default_bucket_name}")
+        if bucket_name not in self.cached_buckets and not self.client.bucket_exists(bucket_name):
+            self.client.make_bucket(bucket_name)
+            self.cached_buckets.add(bucket_name)
+            logging.info(f"Created bucket: {bucket_name}")
 
     def _get_bucket_name(self, bucket_name: Optional[str] = None) -> str:
         """Get the bucket name, using the default if not specified."""
         if not bucket_name and not self.default_bucket_name:
             raise ValueError("No default bucket specified. Bucket name must be provided.")
 
-        return bucket_name or self.default_bucket_name
+        bucket_name = bucket_name or self.default_bucket_name
+        self._ensure_bucket_exists(bucket_name)
+
+        return bucket_name
 
     def _upload_file(self, file_path: Path, object_name: str, bucket_name: Optional[str] = None):
         """Upload a file to the specified bucket."""
