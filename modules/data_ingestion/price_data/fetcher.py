@@ -11,7 +11,7 @@ class PriceDataFetcher(DataFetcherBase):
     Fetches cryptocurrency price data and saves it to MinIO.
     """
 
-    def __init__(self, minio_write_client: MinioWriteClient, url: str, symbols: list[str], source: str, fetch_interval_second: int = 5, save_batch_size: int = 100):
+    def __init__(self, minio_write_client: MinioWriteClient, url: str, symbols: list[str], source: str, fetch_interval_second: float = 0.1, save_batch_size: int = 1000):
         super().__init__(minio_write_client=minio_write_client, save_batch_size=save_batch_size)
         self.minio_write_client = minio_write_client
         self.base_url = url 

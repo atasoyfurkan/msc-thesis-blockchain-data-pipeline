@@ -6,11 +6,12 @@ from typing import Optional
 from modules.data_storage.minio.write_client import MinioWriteClient
 from modules.data_ingestion.base_fetcher import DataFetcherBase
 from modules.data_ingestion.parsers import parse_transaction
+from modules.data_ingestion.extractors import extract_ethereum_node_ws_message
 
 class MempoolDataFetcher(DataFetcherBase):
     """Fetches Ethereum mempool transaction data and saves transaction details to MinIO."""
 
-    def __init__(self, minio_write_client: MinioWriteClient, ws_url: str, http_url: str, fetch_detail_batch_size: int = 10, save_batch_size: int = 100):
+    def __init__(self, minio_write_client: MinioWriteClient, ws_url: str, http_url: str, fetch_detail_batch_size: int = 100, save_batch_size: int = 1000):
         super().__init__(minio_write_client=minio_write_client, save_batch_size=save_batch_size)
         self.ws_url = ws_url
         self.http_url = http_url
@@ -22,7 +23,7 @@ class MempoolDataFetcher(DataFetcherBase):
         """Handle incoming WebSocket messages."""
         logging.debug(f"Received websocket message: {message}")
         
-        transaction_hash = self._extract_transaction_hash(message)
+        transaction_hash = extract_ethereum_node_ws_message(message)
         if transaction_hash:
             self.transaction_hashes.append(transaction_hash)
 
@@ -34,33 +35,6 @@ class MempoolDataFetcher(DataFetcherBase):
 
         if len(self.data_batch) >= self.save_batch_size:
             self.data_batch = self.save_to_minio(data_batch=self.data_batch)
-
-    def _extract_transaction_hash(self, message: str) -> Optional[str]:
-        """Extracts the transaction hash from the WebSocket message."""
-        try:
-            data = json.loads(message)
-
-            if not isinstance(data, dict):
-                logging.warning(f"Invalid message format: {data}")
-                return None
-
-            if "error" in data:
-                logging.error(f"Error response: {data['error']}")
-                return None
-            
-            if "params" not in data:
-                logging.warning(f"Missing 'params' in data: {data}")
-                return None
-
-            params = data["params"]
-            if not isinstance(params, dict) or "result" not in params:
-                logging.warning(f"Missing 'result' in params: {params}")
-                return None
-            
-            return params["result"]
-        except json.JSONDecodeError as e:
-            logging.error(f"Failed to decode message: {e}")
-            return None
 
     def _fetch_transaction_details(self):
         """Fetches transaction details for a batch of transaction hashes."""

@@ -6,11 +6,12 @@ from typing import Optional
 from modules.data_storage.minio.write_client import MinioWriteClient
 from modules.data_ingestion.base_fetcher import DataFetcherBase
 from modules.data_ingestion.parsers import parse_block_header, parse_block
+from modules.data_ingestion.extractors import extract_ethereum_node_ws_message
 
 class BlockDataFetcher(DataFetcherBase):
     """Fetches Ethereum mempool transaction data and saves transaction details to MinIO."""
 
-    def __init__(self, minio_write_client: MinioWriteClient, ws_url: str, http_url: str, bucket_name_header: str, bucket_name: str, save_batch_size: int = 100):
+    def __init__(self, minio_write_client: MinioWriteClient, ws_url: str, http_url: str, bucket_name_header: str, bucket_name: str, save_batch_size: int = 10):
         super().__init__(minio_write_client=minio_write_client, save_batch_size=save_batch_size)
         self.ws_url = ws_url
         self.http_url = http_url
@@ -23,7 +24,7 @@ class BlockDataFetcher(DataFetcherBase):
         """Handle incoming WebSocket messages."""
         logging.debug(f"Received websocket message: {message}")
         
-        block_header = self._extract_block_header(message)
+        block_header = extract_ethereum_node_ws_message(message)
         if block_header:
             parsed_block_header = parse_block_header(block_header)
             self.data_batch_block_headers.append(parsed_block_header)
@@ -39,33 +40,6 @@ class BlockDataFetcher(DataFetcherBase):
 
         if len(self.data_batch_blocks) >= self.save_batch_size:
             self.data_batch_blocks = self.save_to_minio(data_batch=self.data_batch_blocks, bucket_name=self.bucket_name)
-
-    def _extract_block_header(self, message: str) -> Optional[str]:
-        """Extracts the transaction hash from the WebSocket message."""
-        try:
-            data = json.loads(message)
-
-            if not isinstance(data, dict):
-                logging.warning(f"Invalid message format: {data}")
-                return None
-
-            if "error" in data:
-                logging.error(f"Error response: {data['error']}")
-                return None
-            
-            if "params" not in data:
-                logging.warning(f"Missing 'params' in data: {data}")
-                return None
-
-            params = data["params"]
-            if not isinstance(params, dict) or "result" not in params:
-                logging.warning(f"Missing 'result' in params: {params}")
-                return None
-            
-            return params["result"]
-        except json.JSONDecodeError as e:
-            logging.error(f"Failed to decode message: {e}")
-            return None
 
     def _fetch_block(self, block_hash: str) -> Optional[dict]:
         """Fetches the latest block number from the Ethereum node."""
