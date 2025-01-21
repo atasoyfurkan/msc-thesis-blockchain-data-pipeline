@@ -110,8 +110,9 @@ def parse_transfer_event(transfer_event: dict, symbol: str, decimals: int, respe
     }
 
     if transfer_event["topics"] and len(transfer_event["topics"]) == 3:
-        transfer_event["from"] = transfer_event["topics"][1]
-        transfer_event["to"] = transfer_event["topics"][2]
+        # Remove leading zeroes from 'from' and 'to'
+        transfer_event["from"] = "0x" + transfer_event["topics"][1][-40:]
+        transfer_event["to"] = "0x" + transfer_event["topics"][2][-40:]
     
     if transfer_event["data"]:
         transfer_event["value"] = float(parse_hex(transfer_event["data"]) / 10**decimals)
