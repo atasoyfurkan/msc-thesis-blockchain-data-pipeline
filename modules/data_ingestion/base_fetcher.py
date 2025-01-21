@@ -35,7 +35,11 @@ class DataFetcherBase(ABC):
 
         logging.info(f"Saving {self.save_batch_size} records to MinIO...")
 
-        self.minio_write_client.upload_table_as_parquet(data_batch[:self.save_batch_size], bucket_name=bucket_name)
+        self.minio_write_client.upload_table_as_parquet(
+            data_batch[:self.save_batch_size], 
+            bucket_name=bucket_name, 
+            metadata={"Record-Count": len(data_batch[:self.save_batch_size])}
+        )
 
         logging.info("Data successfully saved to MinIO")
 

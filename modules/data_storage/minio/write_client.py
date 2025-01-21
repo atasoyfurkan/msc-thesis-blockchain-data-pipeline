@@ -38,20 +38,21 @@ class MinioWriteClient:
 
         return bucket_name
 
-    def _upload_file(self, file_path: Path, object_name: str, bucket_name: Optional[str] = None):
+    def _upload_file(self, file_path: Path, object_name: str, bucket_name: Optional[str] = None, metadata: dict = {}):
         """Upload a file to the specified bucket."""
         bucket_name = self._get_bucket_name(bucket_name)
         try:
             self.client.fput_object(
                 bucket_name,
                 object_name,
-                str(file_path)
+                str(file_path),
+                metadata=metadata
             )
-            logging.info(f"Uploaded {object_name} to MinIO bucket {bucket_name}")
+            logging.info(f"Uploaded {object_name} to MinIO bucket {bucket_name} with metadata: {metadata}")
         except S3Error as e:
             logging.error(f"Failed to upload to MinIO: {e}")
 
-    def upload_table_as_parquet(self, table: list[dict], bucket_name: Optional[str] = None):
+    def upload_table_as_parquet(self, table: list[dict], bucket_name: Optional[str] = None, metadata: dict = {}):
         """
         Saves the DataFrame as a Parquet file and uploads it to MinIO
         using a structured directory format.
@@ -78,7 +79,7 @@ class MinioWriteClient:
             df.to_parquet(temp_file, index=False)
 
             # Upload the Parquet file to MinIO
-            self._upload_file(temp_file, minio_path, bucket_name)
+            self._upload_file(temp_file, minio_path, bucket_name, metadata=metadata)
 
             # Remove the local file after uploading
             temp_file.unlink()
