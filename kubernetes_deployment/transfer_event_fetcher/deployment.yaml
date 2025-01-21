@@ -22,9 +22,15 @@ spec:
           - name: LOGGING_LEVEL
             value: "INFO"
           - name: NODE_WS_URL
-            value: "ws://131.159.14.109:8546"
+            valueFrom:
+              configMapKeyRef:
+                name: pipeline-env
+                key: ethereum-node-ws-url
           - name: NODE_HTTP_URL
-            value: "http://131.159.14.109:8545"
+            valueFrom:
+              configMapKeyRef:
+                name: pipeline-env
+                key: ethereum-node-http-url
           - name: SAVE_BATCH_SIZE
             value: "100"
           - name: MINIO_BUCKET
