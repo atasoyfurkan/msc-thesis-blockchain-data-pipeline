@@ -55,7 +55,7 @@ kubectl apply -f block_fetcher/deployment.yaml
 # Deploy price_data-fetcher
 ## Build and push docker image
 docker buildx build --platform linux/amd64 \
-  -t atasoy/pipeline-price-data-fetcher:v1.1 \
+  -t atasoy/pipeline-price-data-fetcher:v1.2 \
   --file ../services/price_data_fetcher/Dockerfile \
   ../ \
   --push

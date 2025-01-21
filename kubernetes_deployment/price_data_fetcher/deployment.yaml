@@ -17,18 +17,18 @@ spec:
     spec:
       containers:
       - name: price-data-fetcher
-        image: atasoy/pipeline-price-data-fetcher:v1.1
+        image: atasoy/pipeline-price-data-fetcher:v1.2
         env:
           - name: LOGGING_LEVEL
             value: "INFO"
           - name: BINANCE_URL
             value: "https://api.binance.com/api/v3/ticker/24hr"
-          - name: BINANCE_SYMBOL
-            value: "ETHUSDT"
+          - name: TOKEN_SYMBOLS
+            value: "ETHUSDT,BNBUSDT"
           - name: PRICE_DATA_SOURCE
             value: "binance"
           - name: FETCH_INTERVAL_SECOND
-            value: "1"
+            value: "0.1"
           - name: SAVE_BATCH_SIZE
             value: "1000"
           - name: MINIO_BUCKET

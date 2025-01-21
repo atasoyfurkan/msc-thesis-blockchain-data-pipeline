@@ -1,18 +1,32 @@
 from datetime import datetime
 from typing import Optional
-import logging
 
 def parse_hex(value: Optional[str], default: Optional[int] = None) -> Optional[int]:
     return int(value, 16) if value else default
 
-def parse_price_data(price_data: dict, source: str, symbol: str) -> dict:
+def parse_price_data(price_data: dict, source: str) -> dict:
     """Parses the fetched price data."""
     return {
-        "symbol": symbol,
+        "symbol": price_data.get("symbol"),
         "price": float(price_data.get("lastPrice")), 
         "volume": float(price_data.get("volume")),
+        "quote_volume": float(price_data.get("quoteVolume")),
+        "count": int(price_data.get("count")),
+        "price_change": float(price_data.get("priceChange")),
+        "price_change_percent": float(price_data.get("priceChangePercent")),
+        "weighted_avg_price": float(price_data.get("weightedAvgPrice")),
+        "prev_close_price": float(price_data.get("prevClosePrice")),
+        "last_price": float(price_data.get("lastPrice")),
+        "last_qty": float(price_data.get("lastQty")),
+        "bid_price": float(price_data.get("bidPrice")),
+        "bid_qty": float(price_data.get("bidQty")),
+        "ask_price": float(price_data.get("askPrice")),
+        "ask_qty": float(price_data.get("askQty")),
+        "open_price": float(price_data.get("openPrice")),
+        "high_price": float(price_data.get("highPrice")),
+        "low_price": float(price_data.get("lowPrice")),
         "source": source,
-        "timestamp": datetime.now().isoformat()
+        "fetched_at": datetime.now().isoformat()
     }
 
 def parse_transaction(tx: dict[str, str], latest_block: Optional[dict[str, str]] = None) -> dict[str, Optional[int]]:
