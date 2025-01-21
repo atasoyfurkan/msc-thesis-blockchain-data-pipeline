@@ -92,3 +92,31 @@ def parse_block(block: dict) -> dict:
     parsed_block = parse_block_header(block)
     parsed_block["transactions"] = [parse_transaction(tx) for tx in block["transactions"]]
     return parsed_block
+
+
+def parse_transfer_event(transfer_event: dict, symbol: str, decimals: int, respective_block: Optional[dict[str, str]] = None) -> dict:
+    transfer_event = {
+        "symbol": symbol,
+        "block_number": parse_hex(transfer_event.get("blockNumber")),
+        "block_hash": transfer_event.get("blockHash"),
+        "transaction_hash": transfer_event.get("transactionHash"),
+        "transaction_index": parse_hex(transfer_event.get("transactionIndex")),
+        "log_index": parse_hex(transfer_event.get("logIndex")),
+        "address": transfer_event.get("address"),
+        "topics": transfer_event.get("topics"),
+        "data": transfer_event.get("data"),
+        "removed": transfer_event.get("removed"),
+        "fetched_at": datetime.now().isoformat()
+    }
+
+    if transfer_event["topics"] and len(transfer_event["topics"]) == 3:
+        transfer_event["from"] = transfer_event["topics"][1]
+        transfer_event["to"] = transfer_event["topics"][2]
+    
+    if transfer_event["data"]:
+        transfer_event["value"] = float(parse_hex(transfer_event["data"]) / 10**decimals)
+    
+    if respective_block and respective_block["timestamp"]:
+        transfer_event["block_created_at"] = datetime.fromtimestamp(parse_hex(respective_block["timestamp"])).isoformat()
+
+    return transfer_event

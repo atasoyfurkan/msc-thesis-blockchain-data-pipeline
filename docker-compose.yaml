@@ -48,6 +48,17 @@ services:
       - minio
     restart: unless-stopped
 
+  transfer_event_fetcher:
+    build:
+      context: .
+      dockerfile: ./services/transfer_event_fetcher/Dockerfile
+    env_file: 
+      - ./services/transfer_event_fetcher/.env
+      - ./services/minio/.env
+    depends_on:
+      - minio
+    restart: unless-stopped
+
   api_backend:
     build: 
       context: .

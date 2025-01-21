@@ -13,9 +13,12 @@ def extract_ethereum_node_ws_message(message: str) -> Optional[str]:
         if "error" in data:
             logging.error(f"Error response: {data['error']}")
             return None
-        
+
         if "params" not in data:
-            logging.warning(f"Missing 'params' in data: {data}")
+            if "result" in data:
+                logging.info(f"Received subscription message: {data}")
+            else:
+                logging.warning(f"Missing 'params' in data: {data}")
             return None
 
         params = data["params"]

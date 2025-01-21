@@ -9,7 +9,7 @@ from modules.data_ingestion.parsers import parse_block_header, parse_block
 from modules.data_ingestion.extractors import extract_ethereum_node_ws_message
 
 class BlockDataFetcher(DataFetcherBase):
-    """Fetches Ethereum mempool transaction data and saves transaction details to MinIO."""
+    """Fetches Ethereum block data and saves transaction details to MinIO."""
 
     def __init__(self, minio_write_client: MinioWriteClient, ws_url: str, http_url: str, bucket_name_header: str, bucket_name: str, save_batch_size: int = 10):
         super().__init__(minio_write_client=minio_write_client, save_batch_size=save_batch_size)

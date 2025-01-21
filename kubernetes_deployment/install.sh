@@ -52,7 +52,7 @@ docker buildx build --platform linux/amd64 \
 ## Apply kubernetes manifests
 kubectl apply -f block_fetcher/deployment.yaml
 
-# Deploy price_data-fetcher
+# Deploy price-data-fetcher
 ## Build and push docker image
 docker buildx build --platform linux/amd64 \
   -t atasoy/pipeline-price-data-fetcher:v1.2 \
@@ -61,6 +61,16 @@ docker buildx build --platform linux/amd64 \
   --push
 ## Apply kubernetes manifests
 kubectl apply -f price_data_fetcher/deployment.yaml
+
+# Deploy transfer-event-fetcher
+## Build and push docker image
+docker buildx build --platform linux/amd64 \
+  -t atasoy/pipeline-transfer-event-fetcher:v1.0 \
+  --file ../services/transfer_event_fetcher/Dockerfile \
+  ../ \
+  --push
+## Apply kubernetes manifests
+kubectl apply -f transfer_event_fetcher/deployment.yaml
 
 # Install prometheus and grafana
 # TODO: increase storage for prometheus when you move to production node
