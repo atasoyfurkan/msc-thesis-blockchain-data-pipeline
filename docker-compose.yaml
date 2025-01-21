@@ -2,7 +2,7 @@ services:
   minio:
     image: quay.io/minio/minio:latest
     env_file: 
-      - ./services/minio/.env
+      - ./services/minio_config/.env
     volumes:
       - ./minio_data:/data                  # Local directory for persistent data storage
     ports:
@@ -21,7 +21,8 @@ services:
       dockerfile: ./services/mempool_fetcher/Dockerfile
     env_file: 
       - ./services/mempool_fetcher/.env
-      - ./services/minio/.env
+      - ./services/minio_config/.env
+      - ./services/ethereum_node_config/.env
     depends_on:
       - minio
     restart: unless-stopped
@@ -32,18 +33,8 @@ services:
       dockerfile: ./services/block_fetcher/Dockerfile
     env_file: 
       - ./services/block_fetcher/.env
-      - ./services/minio/.env
-    depends_on:
-      - minio
-    restart: unless-stopped
-
-  price_data_fetcher:
-    build:
-      context: .
-      dockerfile: ./services/price_data_fetcher/Dockerfile
-    env_file: 
-      - ./services/price_data_fetcher/.env
-      - ./services/minio/.env
+      - ./services/minio_config/.env
+      - ./services/ethereum_node_config/.env
     depends_on:
       - minio
     restart: unless-stopped
@@ -54,7 +45,19 @@ services:
       dockerfile: ./services/transfer_event_fetcher/Dockerfile
     env_file: 
       - ./services/transfer_event_fetcher/.env
-      - ./services/minio/.env
+      - ./services/minio_config/.env
+      - ./services/ethereum_node_config/.env
+    depends_on:
+      - minio
+    restart: unless-stopped
+
+  price_data_fetcher:
+    build:
+      context: .
+      dockerfile: ./services/price_data_fetcher/Dockerfile
+    env_file: 
+      - ./services/price_data_fetcher/.env
+      - ./services/minio_config/.env
     depends_on:
       - minio
     restart: unless-stopped
@@ -65,7 +68,7 @@ services:
       dockerfile: ./services/api_backend/Dockerfile
     env_file: 
       - ./services/api_backend/.env
-      - ./services/minio/.env
+      - ./services/minio_config/.env
     ports:
       - "8000:8000"
     depends_on:
