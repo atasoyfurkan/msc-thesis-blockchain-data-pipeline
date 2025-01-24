@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: transfer-event-fetcher
-        image: atasoy/pipeline-transfer-event-fetcher:v1.0
+        image: atasoy/pipeline-transfer-event-fetcher:v1.1
         env:
           - name: LOGGING_LEVEL
             value: "INFO"

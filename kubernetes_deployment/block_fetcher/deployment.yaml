@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: block-fetcher
-        image: atasoy/pipeline-block-fetcher:v1.1
+        image: atasoy/pipeline-block-fetcher:v1.2
         env:
           - name: LOGGING_LEVEL
             value: "INFO"
