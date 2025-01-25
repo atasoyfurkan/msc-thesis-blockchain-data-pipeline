@@ -4,7 +4,7 @@ tenant:
   # The Tenant name
   #
   # Change this to match your preferred MinIO Tenant name.
-  name: myminio
+  name: minio-datalake
   ###
   # Specify the Operator container image to use for the deployment.
   # ``image.tag`` 
@@ -70,7 +70,7 @@ tenant:
   # The Kubernetes secret name that contains MinIO environment variable configurations.
   # The secret is expected to have a key named config.env containing environment variables exports.
   configuration:
-    name: myminio-env-configuration
+    name: minio-datalake-env-configuration
   ###
   # Root key for dynamically creating a secret for use with configuring root MinIO User
   # Specify the ``name`` and then a list of environment variables.
@@ -84,12 +84,12 @@ tenant:
   #
   # .. code-block:: yaml
   #
-  #    name: myminio-env-configuration
+  #    name: minio-datalake-env-configuration
   #    accessKey: minio
   #    secretKey: minio123
   #
   configSecret:
-    name: myminio-env-configuration
+    name: minio-datalake-env-configuration
     accessKey: admin
     secretKey: EEnDK0j0Fz_QmxG_oDdWQ_O552PbNfXQvwDUAfh-2nY
     #existingSecret: true
@@ -134,17 +134,17 @@ tenant:
       name: pool-0
       ###
       # The number of volumes attached per MinIO Tenant Pod / Server.
-      volumesPerServer: 1
+      volumesPerServer: 4
       ###
       # The capacity per volume requested per MinIO Tenant Pod.
-      size: 10Gi
+      size: 100Gi
       ###
       # The `storageClass <https://kubernetes.io/docs/concepts/storage/storage-classes/>`__ to associate with volumes generated for this pool.
       #
       # If using Amazon Elastic Block Store (EBS) CSI driver
       # Please make sure to set xfs for "csi.storage.k8s.io/fstype" parameter under StorageClass.parameters.
       # Docs: https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/docs/parameters.md
-      # storageClassName: standard
+      storageClassName: nfs-storage-class
       ###
       # Specify `storageAnnotations <https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/>`__ to associate to PVCs.
       storageAnnotations: { }
@@ -190,24 +190,23 @@ tenant:
       #
       # We recommend disabling recursive permission changes by setting ``fsGroupChangePolicy`` to ``OnRootMismatch`` as those operations can be expensive for certain workloads (e.g. large volumes with many small files).
       securityContext:
-        runAsUser: 1000
-        runAsGroup: 1000
-        fsGroup: 1000
+        runAsUser: 0
+        runAsGroup: 0
+        fsGroup: 0
         fsGroupChangePolicy: "OnRootMismatch"
-        runAsNonRoot: true
+        runAsNonRoot: false
       ###
       # The Kubernetes `SecurityContext <https://kubernetes.io/docs/tasks/configure-pod-container/security-context/>`__ to use for deploying Tenant containers.
       # You may need to modify these values to meet your cluster's security and access settings.
       containerSecurityContext:
-        runAsUser: 1000
-        runAsGroup: 1000
-        runAsNonRoot: true
-        allowPrivilegeEscalation: false
+        runAsUser: 0
+        runAsGroup: 0
+        runAsNonRoot: false
+        allowPrivilegeEscalation: true
         capabilities:
-          drop:
-            - ALL
+          drop: []
         seccompProfile:
-          type: RuntimeDefault
+          type: Unconfined
       ###
       #
       # An array of `Topology Spread Constraints <https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/>`__ to associate to Operator Console pods.
@@ -351,7 +350,7 @@ tenant:
   #
   # .. code-block:: shell
   #
-  #    $ k logs myminio-pool-0-0 -n default
+  #    $ k logs minio-datalake-pool-0-0 -n default
   #    {"level":"INFO","errKind":"","time":"2022-04-07T21:49:33.740058549Z","message":"All MinIO sub-systems initialized successfully"}
   logging: { }
   ###
