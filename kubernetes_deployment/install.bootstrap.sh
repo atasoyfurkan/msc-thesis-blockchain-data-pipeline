@@ -1,5 +1,23 @@
-# Install helm
-curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+#!/bin/bash
+
+##### Installation #####
+
+./install.reboot.sh
+
+
+##### Kubernetes Deployments #####
+
+# Install nginx ingress controller using helm
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+helm upgrade --install ingress-nginx ingress-nginx \
+  --repo https://kubernetes.github.io/ingress-nginx \
+  --namespace ingress-nginx \
+  --create-namespace
+
+# apply cert-manager and cluster issuer
+kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.5.0/cert-manager.yaml
+kubectl apply -f server_setup/cluster-issuer-letsencrypt.yaml
 
 # Deploy minio
 ## Install minio-operator
@@ -9,12 +27,43 @@ helm upgrade --install \
     --create-namespace \
     operator minio-operator/operator
 
+## Install nfs-provisioner for minio-datalake
+helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
+helm install nfs-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
+  --namespace pipeline \
+  --create-namespace \
+  --set nfs.server=192.168.242.1 \
+  --set nfs.path=/pipeline_minio_data \
+  --set storageClass.name=nfs-storage-class
+
 ## Install minio-tenant
 helm upgrade --install \
     --namespace pipeline \
     --create-namespace \
     --values minio/values.yaml \
-    myminio minio-operator/tenant
+    minio-datalake minio-operator/tenant
+
+kubectl delete pvc data0-minio-datalake-pool-0-0  -n pipeline
+kubectl delete pvc data0-minio-datalake-pool-0-1  -n pipeline
+kubectl delete pvc data0-minio-datalake-pool-0-2  -n pipeline
+kubectl delete pvc data0-minio-datalake-pool-0-3  -n pipeline
+
+kubectl delete pvc data1-minio-datalake-pool-0-0  -n pipeline
+kubectl delete pvc data1-minio-datalake-pool-0-1  -n pipeline
+kubectl delete pvc data1-minio-datalake-pool-0-2  -n pipeline
+kubectl delete pvc data1-minio-datalake-pool-0-3  -n pipeline
+
+kubectl delete pvc data2-minio-datalake-pool-0-0  -n pipeline
+kubectl delete pvc data2-minio-datalake-pool-0-1  -n pipeline
+kubectl delete pvc data2-minio-datalake-pool-0-2  -n pipeline
+kubectl delete pvc data2-minio-datalake-pool-0-3  -n pipeline
+
+kubectl delete pvc data3-minio-datalake-pool-0-0  -n pipeline
+kubectl delete pvc data3-minio-datalake-pool-0-1  -n pipeline
+kubectl delete pvc data3-minio-datalake-pool-0-2  -n pipeline
+kubectl delete pvc data3-minio-datalake-pool-0-3  -n pipeline
+
+rm -r archived-pipeline-data0-minio-datalake-pool-0-1-pvc-087be2b0-27e4-435a-aa16-1de9988f732e
 
 # Deploy shared configs
 kubectl apply -f shared_configmap.yaml
@@ -76,9 +125,12 @@ kubectl apply -f transfer_event_fetcher/deployment.yaml
 # TODO: increase storage for prometheus when you move to production node
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
+kubectl apply -f monitoring/prometheus-grafana/namespace.yaml
 kubectl apply -f monitoring/prometheus-grafana/dashboards/minio-bucket-dashboard-configmap.yaml
 kubectl apply -f monitoring/prometheus-grafana/dashboards/minio-cluster-dashboard-configmap.yaml
 kubectl apply -f monitoring/prometheus-grafana/dashboards/jupyterhub-dashboard-configmap.yaml
+kubectl apply -f monitoring/prometheus-grafana/dashboards/jupyterhub-user-diagnostic-dashboard-configmap.yaml
+sudo mount --make-rshared / # # allowing mount events to propagate between namespaces (necessary for Kubernetes) 
 helm upgrade --install \
     --namespace monitoring \
     --create-namespace \
