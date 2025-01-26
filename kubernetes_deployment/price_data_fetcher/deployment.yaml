@@ -28,7 +28,7 @@ spec:
           - name: PRICE_DATA_SOURCE
             value: "binance"
           - name: FETCH_INTERVAL_SECOND
-            value: "0.1"
+            value: "0.5"
           - name: SAVE_BATCH_SIZE
             value: "1000"
           - name: MINIO_BUCKET
