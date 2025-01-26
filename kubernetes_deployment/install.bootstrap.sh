@@ -43,28 +43,6 @@ helm upgrade --install \
     --values minio/values.yaml \
     minio-datalake minio-operator/tenant
 
-kubectl delete pvc data0-minio-datalake-pool-0-0  -n pipeline
-kubectl delete pvc data0-minio-datalake-pool-0-1  -n pipeline
-kubectl delete pvc data0-minio-datalake-pool-0-2  -n pipeline
-kubectl delete pvc data0-minio-datalake-pool-0-3  -n pipeline
-
-kubectl delete pvc data1-minio-datalake-pool-0-0  -n pipeline
-kubectl delete pvc data1-minio-datalake-pool-0-1  -n pipeline
-kubectl delete pvc data1-minio-datalake-pool-0-2  -n pipeline
-kubectl delete pvc data1-minio-datalake-pool-0-3  -n pipeline
-
-kubectl delete pvc data2-minio-datalake-pool-0-0  -n pipeline
-kubectl delete pvc data2-minio-datalake-pool-0-1  -n pipeline
-kubectl delete pvc data2-minio-datalake-pool-0-2  -n pipeline
-kubectl delete pvc data2-minio-datalake-pool-0-3  -n pipeline
-
-kubectl delete pvc data3-minio-datalake-pool-0-0  -n pipeline
-kubectl delete pvc data3-minio-datalake-pool-0-1  -n pipeline
-kubectl delete pvc data3-minio-datalake-pool-0-2  -n pipeline
-kubectl delete pvc data3-minio-datalake-pool-0-3  -n pipeline
-
-rm -r archived-pipeline-data0-minio-datalake-pool-0-1-pvc-087be2b0-27e4-435a-aa16-1de9988f732e
-
 # Deploy shared configs
 kubectl apply -f shared_configmap.yaml
 kubectl apply -f shared_secret.yaml

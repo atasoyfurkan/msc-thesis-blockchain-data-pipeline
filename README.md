@@ -9,4 +9,4 @@
 
     kubectl port-forward svc/monitoring-kube-prometheus-prometheus 9090:9090 -n monitoring
 
-    kubectl port-forward svc/myminio-console 9091:9090 -n pipeline
+    kubectl port-forward svc/minio-datalake-console 9091:9090 -n pipeline

@@ -13,19 +13,19 @@ prometheus:
         scheme: http
         static_configs:
           - targets:
-              - myminio-hl.pipeline.svc.cluster.local:9000 
+              - minio-datalake-hl.pipeline.svc.cluster.local:9000 
       - job_name: 'minio-bucket'
         metrics_path: /minio/v2/metrics/bucket
         scheme: http
         static_configs:
           - targets:
-              - myminio-hl.pipeline.svc.cluster.local:9000 
+              - minio-datalake-hl.pipeline.svc.cluster.local:9000 
       - job_name: 'minio-resource'
         metrics_path: /minio/v2/metrics/resource
         scheme: http
         static_configs:
           - targets:
-              - myminio-hl.pipeline.svc.cluster.local:9000
+              - minio-datalake-hl.pipeline.svc.cluster.local:9000
       - job_name: "jupyterhub"
         metrics_path: /hub/metrics
         static_configs:
