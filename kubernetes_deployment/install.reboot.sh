@@ -1,4 +1,12 @@
 ##### Install Docker ######
+# Mount the SSD storage
+mount /dev/sda /mnt/sda
+
+# Persist Docker data
+mkdir -p /mnt/sda/docker
+mkdir -p /var/lib/docker
+mount --rbind /mnt/sda/docker /var/lib/docker
+
 # Add Docker's official GPG key:
 sudo apt-get update
 sudo apt-get install ca-certificates curl
@@ -23,6 +31,11 @@ systemctl daemon-reload
 systemctl restart docker
 
 ##### Install K3S and Helm ######
+# Persist K3S data
+mkdir -p /mnt/sda/data-pipeline/k3s
+mkdir -p /var/lib/rancher/k3s
+mount --rbind /mnt/sda/data-pipeline/k3s /var/lib/rancher/k3s 
+
 # Install K3S
 sudo apt update
 curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--docker" sh -s - --disable traefik
@@ -53,3 +66,15 @@ sudo apt-get install apt-transport-https --yes
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
 sudo apt-get update
 sudo apt-get install helm
+
+##### Connect to NFS Storage  #####
+
+# Prepare network VLAN connection for NFS
+sudo ip link set dev eno4 up
+sudo ip addr add 192.168.242.12/24 dev eno4
+
+# Mount NFS to the machine
+apt install nfs-common
+echo "192.168.242.1:/pipeline_minio_data  /mnt/pipeline_minio_data nfs4 _netdev,rw,rsize=16384,wsize=16384 0 0" | sudo tee -a /etc/fstab
+mkdir -p /mnt/pipeline_minio_data
+mount /mnt/pipeline_minio_data

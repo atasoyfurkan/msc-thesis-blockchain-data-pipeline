@@ -5,5 +5,5 @@ metadata:
   namespace: pipeline
 data:
   minio-endpoint: "minio:80"
-  ethereum-node-ws-url: "ws://131.159.14.109:8546"
-  ethereum-node-http-url: "http://131.159.14.109:8545"
+  ethereum-node-ws-url: "ws://172.16.24.1:8546"
+  ethereum-node-http-url: "http://172.16.24.1:8545"

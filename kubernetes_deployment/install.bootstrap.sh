@@ -100,7 +100,6 @@ docker buildx build --platform linux/amd64 \
 kubectl apply -f transfer_event_fetcher/deployment.yaml
 
 # Install prometheus and grafana
-# TODO: increase storage for prometheus when you move to production node
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
 kubectl apply -f monitoring/prometheus-grafana/namespace.yaml
@@ -108,7 +107,7 @@ kubectl apply -f monitoring/prometheus-grafana/dashboards/minio-bucket-dashboard
 kubectl apply -f monitoring/prometheus-grafana/dashboards/minio-cluster-dashboard-configmap.yaml
 kubectl apply -f monitoring/prometheus-grafana/dashboards/jupyterhub-dashboard-configmap.yaml
 kubectl apply -f monitoring/prometheus-grafana/dashboards/jupyterhub-user-diagnostic-dashboard-configmap.yaml
-sudo mount --make-rshared / # # allowing mount events to propagate between namespaces (necessary for Kubernetes) 
+sudo mount --make-rshared / # allowing mount events to propagate between namespaces (necessary for Kubernetes) 
 helm upgrade --install \
     --namespace monitoring \
     --create-namespace \
