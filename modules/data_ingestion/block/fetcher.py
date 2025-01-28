@@ -2,6 +2,7 @@ import json
 import logging
 import requests
 import websocket
+import time
 from typing import Optional
 from modules.data_storage.minio.write_client import MinioWriteClient
 from modules.data_ingestion.base_fetcher import DataFetcherBase
@@ -11,8 +12,8 @@ from modules.data_ingestion.extractors import extract_ethereum_node_ws_message
 class BlockDataFetcher(DataFetcherBase):
     """Fetches Ethereum block data and saves transaction details to MinIO."""
 
-    def __init__(self, minio_write_client: MinioWriteClient, ws_url: str, http_url: str, bucket_name_header: str, bucket_name: str, save_batch_size: int = 10):
-        super().__init__(minio_write_client=minio_write_client, save_batch_size=save_batch_size)
+    def __init__(self, minio_write_client: MinioWriteClient, ws_url: str, http_url: str, bucket_name_header: str, bucket_name: str, save_batch_size: int = 10, prometheus_pushgateway_url: Optional[str] = None):
+        super().__init__(minio_write_client=minio_write_client, save_batch_size=save_batch_size, prometheus_pushgateway_url=prometheus_pushgateway_url, metric_origin="block-data-fetcher")
         self.ws_url = ws_url
         self.http_url = http_url
         self.bucket_name_header = bucket_name_header
@@ -23,7 +24,8 @@ class BlockDataFetcher(DataFetcherBase):
     def on_message(self, ws, message: str):
         """Handle incoming WebSocket messages."""
         logging.debug(f"Received websocket message: {message}")
-        
+        ingest_start_time = time.time()
+
         block_header = extract_ethereum_node_ws_message(message)
         if block_header:
             parsed_block_header = parse_block_header(block_header)
@@ -31,12 +33,13 @@ class BlockDataFetcher(DataFetcherBase):
 
             block = parse_block(self._fetch_block(block_hash=parsed_block_header["hash"]))
             if block:
+                block["ingest_start_time"] = ingest_start_time
                 self.data_batch_blocks.append(block)
 
         self.log_progress(data_batch=self.data_batch_block_headers)
 
         if len(self.data_batch_block_headers) >= self.save_batch_size:
-            self.data_batch_block_headers = self.save_to_minio(data_batch=self.data_batch_block_headers, bucket_name=self.bucket_name_header)
+            self.data_batch_block_headers = self.save_to_minio(data_batch=self.data_batch_block_headers, bucket_name=self.bucket_name_header, metric_disable=True)
 
         if len(self.data_batch_blocks) >= self.save_batch_size:
             self.data_batch_blocks = self.save_to_minio(data_batch=self.data_batch_blocks, bucket_name=self.bucket_name)

@@ -2,6 +2,7 @@ import json
 import logging
 import websocket
 import requests
+import time
 from typing import Optional
 from modules.data_storage.minio.write_client import MinioWriteClient
 from modules.data_ingestion.base_fetcher import DataFetcherBase
@@ -11,8 +12,8 @@ from modules.data_ingestion.extractors import extract_ethereum_node_ws_message
 class TransferEventDataFetcher(DataFetcherBase):
     """Fetches Ethereum Transfer Event data and saves transaction details to MinIO."""
 
-    def __init__(self, minio_write_client: MinioWriteClient, ws_url: str, http_url: str, token_configurations: list[dict], save_batch_size: int = 1000):
-        super().__init__(minio_write_client=minio_write_client, save_batch_size=save_batch_size)
+    def __init__(self, minio_write_client: MinioWriteClient, ws_url: str, http_url: str, token_configurations: list[dict], save_batch_size: int = 1000, prometheus_pushgateway_url: Optional[str] = None):
+        super().__init__(minio_write_client=minio_write_client, save_batch_size=save_batch_size, prometheus_pushgateway_url=prometheus_pushgateway_url, metric_origin="transfer-event-fetcher")
         self.ws_url = ws_url
         self.http_url = http_url
         self.token_configurations_lookup = { token_configuration["address"].lower(): token_configuration for token_configuration in token_configurations }
@@ -22,6 +23,7 @@ class TransferEventDataFetcher(DataFetcherBase):
     def on_message(self, ws, message: str):
         """Handle incoming WebSocket messages."""
         logging.debug(f"Received websocket message: {message}")
+        ingest_start_time = time.time()
         
         transfer_event = extract_ethereum_node_ws_message(message)
         if transfer_event:
@@ -35,6 +37,8 @@ class TransferEventDataFetcher(DataFetcherBase):
             respective_block = self._fetch_block(block_hash=transfer_event["blockHash"])
 
             parsed_transfer_event = parse_transfer_event(transfer_event=transfer_event, symbol=symbol, decimals=decimals, respective_block=respective_block)
+            parsed_transfer_event["ingest_start_time"] = ingest_start_time
+
             self.data_batch.append(parsed_transfer_event)
 
         self.log_progress(data_batch=self.data_batch)

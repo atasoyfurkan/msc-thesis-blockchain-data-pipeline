@@ -2,7 +2,7 @@
 FROM python:3.9-slim as build
 
 WORKDIR /app
-RUN pip install pandas pyarrow requests minio
+RUN pip install pandas pyarrow requests minio prometheus_client
 
 # Stage 2: Final Image
 FROM python:3.9-slim

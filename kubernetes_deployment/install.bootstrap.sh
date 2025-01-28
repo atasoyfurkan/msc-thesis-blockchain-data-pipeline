@@ -62,7 +62,7 @@ kubectl apply -f api_backend/ingress.yaml
 # Deploy mempool-fetcher
 ## Build and push docker image
 docker buildx build --platform linux/amd64 \
-  -t atasoy/pipeline-mempool-fetcher:v1.7 \
+  -t atasoy/pipeline-mempool-fetcher:v1.9 \
   --file ../services/mempool_fetcher/Dockerfile \
   ../ \
   --push
@@ -72,7 +72,7 @@ kubectl apply -f mempool_fetcher/deployment.yaml
 # Deploy block-fetcher
 ## Build and push docker image
 docker buildx build --platform linux/amd64 \
-  -t atasoy/pipeline-block-fetcher:v1.2 \
+  -t atasoy/pipeline-block-fetcher:v1.4 \
   --file ../services/block_fetcher/Dockerfile \
   ../ \
   --push
@@ -82,7 +82,7 @@ kubectl apply -f block_fetcher/deployment.yaml
 # Deploy price-data-fetcher
 ## Build and push docker image
 docker buildx build --platform linux/amd64 \
-  -t atasoy/pipeline-price-data-fetcher:v1.3 \
+  -t atasoy/pipeline-price-data-fetcher:v1.5 \
   --file ../services/price_data_fetcher/Dockerfile \
   ../ \
   --push
@@ -92,7 +92,7 @@ kubectl apply -f price_data_fetcher/deployment.yaml
 # Deploy transfer-event-fetcher
 ## Build and push docker image
 docker buildx build --platform linux/amd64 \
-  -t atasoy/pipeline-transfer-event-fetcher:v1.1 \
+  -t atasoy/pipeline-transfer-event-fetcher:v1.5 \
   --file ../services/transfer_event_fetcher/Dockerfile \
   ../ \
   --push
@@ -113,6 +113,11 @@ helm upgrade --install \
     --create-namespace \
     --values monitoring/prometheus-grafana/values.yaml \
     monitoring prometheus-community/kube-prometheus-stack 
+## Install prometheus-pushgateway for fetchers to push metrics
+helm upgrade --install prometheus-pushgateway prometheus-community/prometheus-pushgateway \
+  --namespace monitoring \
+  --create-namespace
+
 
 # Install loki and promtail
 helm repo add grafana https://grafana.github.io/helm-charts

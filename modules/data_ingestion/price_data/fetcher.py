@@ -11,8 +11,8 @@ class PriceDataFetcher(DataFetcherBase):
     Fetches cryptocurrency price data and saves it to MinIO.
     """
 
-    def __init__(self, minio_write_client: MinioWriteClient, url: str, symbols: list[str], source: str, fetch_interval_second: float = 0.1, save_batch_size: int = 1000):
-        super().__init__(minio_write_client=minio_write_client, save_batch_size=save_batch_size)
+    def __init__(self, minio_write_client: MinioWriteClient, url: str, symbols: list[str], source: str, fetch_interval_second: float = 0.1, save_batch_size: int = 1000, prometheus_pushgateway_url: Optional[str] = None):
+        super().__init__(minio_write_client=minio_write_client, save_batch_size=save_batch_size, prometheus_pushgateway_url=prometheus_pushgateway_url, metric_origin="price-data-fetcher")
         self.minio_write_client = minio_write_client
         self.base_url = url 
         self.symbols = symbols
@@ -42,10 +42,13 @@ class PriceDataFetcher(DataFetcherBase):
         """
         logging.info("Starting the PriceDataFetcher...")
         while True:
+            ingest_start_time = time.time()     
+            
             for symbol in self.symbols:
                 price_data = self.fetch_price_data(symbol=symbol)
                 
                 if price_data:
+                    price_data["ingest_start_time"] = ingest_start_time
                     self.data_batch.append(price_data)
 
             self.log_progress(data_batch=self.data_batch)

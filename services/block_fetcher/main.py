@@ -10,6 +10,7 @@ def main():
     NODE_WS_URL = os.getenv("NODE_WS_URL")
     NODE_HTTP_URL = os.getenv("NODE_HTTP_URL")
     SAVE_BATCH_SIZE = int(os.getenv("SAVE_BATCH_SIZE"))
+    PROMETHEUS_PUSHGATEWAY_URL = os.getenv("PROMETHEUS_PUSHGATEWAY_URL")
 
     MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT")
     MINIO_BUCKET_BLOCK_HEADER = os.getenv("MINIO_BUCKET_BLOCK_HEADER")
@@ -33,7 +34,8 @@ def main():
         http_url=NODE_HTTP_URL,
         bucket_name_header=MINIO_BUCKET_BLOCK_HEADER,
         bucket_name=MINIO_BUCKET_BLOCK,
-        save_batch_size=SAVE_BATCH_SIZE
+        save_batch_size=SAVE_BATCH_SIZE,
+        prometheus_pushgateway_url=PROMETHEUS_PUSHGATEWAY_URL
     )
     mempool_data_fetcher.start()
 

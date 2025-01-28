@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: block-fetcher
-        image: atasoy/pipeline-block-fetcher:v1.2
+        image: atasoy/pipeline-block-fetcher:v1.4
         env:
           - name: LOGGING_LEVEL
             value: "INFO"
@@ -52,3 +52,8 @@ spec:
               secretKeyRef:
                 name: pipeline-secret
                 key: minio-root-password
+          - name: PROMETHEUS_PUSHGATEWAY_URL
+            valueFrom:
+              configMapKeyRef:
+                name: pipeline-env
+                key: prometheus_pushgateway_url

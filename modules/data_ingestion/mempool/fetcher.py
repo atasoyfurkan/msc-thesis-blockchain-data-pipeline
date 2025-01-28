@@ -3,6 +3,7 @@ import logging
 import requests
 import websocket
 from typing import Optional
+import time
 from modules.data_storage.minio.write_client import MinioWriteClient
 from modules.data_ingestion.base_fetcher import DataFetcherBase
 from modules.data_ingestion.parsers import parse_transaction
@@ -11,8 +12,8 @@ from modules.data_ingestion.extractors import extract_ethereum_node_ws_message
 class MempoolDataFetcher(DataFetcherBase):
     """Fetches Ethereum mempool transaction data and saves transaction details to MinIO."""
 
-    def __init__(self, minio_write_client: MinioWriteClient, ws_url: str, http_url: str, fetch_detail_batch_size: int = 100, save_batch_size: int = 1000):
-        super().__init__(minio_write_client=minio_write_client, save_batch_size=save_batch_size)
+    def __init__(self, minio_write_client: MinioWriteClient, ws_url: str, http_url: str, fetch_detail_batch_size: int = 100, save_batch_size: int = 1000, prometheus_pushgateway_url: Optional[str] = None):
+        super().__init__(minio_write_client=minio_write_client, save_batch_size=save_batch_size, prometheus_pushgateway_url=prometheus_pushgateway_url, metric_origin="mempool-data-fetcher")
         self.ws_url = ws_url
         self.http_url = http_url
         self.fetch_detail_batch_size = fetch_detail_batch_size
@@ -22,13 +23,14 @@ class MempoolDataFetcher(DataFetcherBase):
     def on_message(self, ws, message: str):
         """Handle incoming WebSocket messages."""
         logging.debug(f"Received websocket message: {message}")
-        
+        ingest_start_time = time.time()
+
         transaction_hash = extract_ethereum_node_ws_message(message)
         if transaction_hash:
             self.transaction_hashes.append(transaction_hash)
 
         if len(self.transaction_hashes) >= self.fetch_detail_batch_size:
-            self._fetch_transaction_details()
+            self._fetch_transaction_details(ingest_start_time=ingest_start_time)
             self.transaction_hashes.clear()
 
         self.log_progress(data_batch=self.data_batch)
@@ -36,7 +38,7 @@ class MempoolDataFetcher(DataFetcherBase):
         if len(self.data_batch) >= self.save_batch_size:
             self.data_batch = self.save_to_minio(data_batch=self.data_batch)
 
-    def _fetch_transaction_details(self):
+    def _fetch_transaction_details(self, ingest_start_time: float):
         """Fetches transaction details for a batch of transaction hashes."""
         try:
             latest_block = self._fetch_latest_block()
@@ -56,6 +58,8 @@ class MempoolDataFetcher(DataFetcherBase):
 
                 if isinstance(tx, dict) and "result" in tx and isinstance(tx["result"], dict):
                     transaction_detail = parse_transaction(tx["result"], latest_block=latest_block)
+                    transaction_detail["ingest_start_time"] = ingest_start_time
+                    
                     logging.debug(f"Parsed transaction detail: {transaction_detail}")
                     self.data_batch.append(transaction_detail)
         except requests.RequestException as e:

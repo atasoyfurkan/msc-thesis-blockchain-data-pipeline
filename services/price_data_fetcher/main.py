@@ -12,6 +12,7 @@ def main():
     PRICE_DATA_SOURCE = os.getenv("PRICE_DATA_SOURCE")
     FETCH_INTERVAL_SECOND = float(os.getenv("FETCH_INTERVAL_SECOND"))
     SAVE_BATCH_SIZE = int(os.getenv("SAVE_BATCH_SIZE"))
+    PROMETHEUS_PUSHGATEWAY_URL = os.getenv("PROMETHEUS_PUSHGATEWAY_URL")
 
     MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT")
     MINIO_BUCKET = os.getenv("MINIO_BUCKET")
@@ -35,7 +36,8 @@ def main():
         symbols=TOKEN_SYMBOLS,
         source=PRICE_DATA_SOURCE,
         fetch_interval_second=FETCH_INTERVAL_SECOND,
-        save_batch_size=SAVE_BATCH_SIZE
+        save_batch_size=SAVE_BATCH_SIZE,
+        prometheus_pushgateway_url=PROMETHEUS_PUSHGATEWAY_URL
     )
     price_data_fetcher.start()
 
