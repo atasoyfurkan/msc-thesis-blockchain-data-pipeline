@@ -23,7 +23,7 @@ class DataFetcherBase(ABC):
         self.AVERAGE_INGESTION_LATENCY = Histogram(
             'fetcher_average_ingestion_latency_seconds', 
             'Time taken to ingest data', 
-            buckets=Histogram.exponential_buckets(start=5, factor=2, count=8),
+            buckets=[5, 10, 20, 40, 80, 160, 320, float("inf")],
             registry=self.metric_registry
         )
 

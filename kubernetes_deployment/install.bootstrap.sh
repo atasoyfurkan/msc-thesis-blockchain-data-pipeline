@@ -62,7 +62,7 @@ kubectl apply -f api_backend/ingress.yaml
 # Deploy mempool-fetcher
 ## Build and push docker image
 docker buildx build --platform linux/amd64 \
-  -t atasoy/pipeline-mempool-fetcher:v1.9 \
+  -t atasoy/pipeline-mempool-fetcher:v1.10 \
   --file ../services/mempool_fetcher/Dockerfile \
   ../ \
   --push
@@ -72,7 +72,7 @@ kubectl apply -f mempool_fetcher/deployment.yaml
 # Deploy block-fetcher
 ## Build and push docker image
 docker buildx build --platform linux/amd64 \
-  -t atasoy/pipeline-block-fetcher:v1.4 \
+  -t atasoy/pipeline-block-fetcher:v1.5 \
   --file ../services/block_fetcher/Dockerfile \
   ../ \
   --push
@@ -82,7 +82,7 @@ kubectl apply -f block_fetcher/deployment.yaml
 # Deploy price-data-fetcher
 ## Build and push docker image
 docker buildx build --platform linux/amd64 \
-  -t atasoy/pipeline-price-data-fetcher:v1.5 \
+  -t atasoy/pipeline-price-data-fetcher:v1.6 \
   --file ../services/price_data_fetcher/Dockerfile \
   ../ \
   --push
@@ -92,7 +92,7 @@ kubectl apply -f price_data_fetcher/deployment.yaml
 # Deploy transfer-event-fetcher
 ## Build and push docker image
 docker buildx build --platform linux/amd64 \
-  -t atasoy/pipeline-transfer-event-fetcher:v1.5 \
+  -t atasoy/pipeline-transfer-event-fetcher:v1.6 \
   --file ../services/transfer_event_fetcher/Dockerfile \
   ../ \
   --push
