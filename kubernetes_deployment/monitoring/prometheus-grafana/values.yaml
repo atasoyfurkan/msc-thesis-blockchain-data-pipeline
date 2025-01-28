@@ -43,6 +43,11 @@ prometheus:
         static_configs:
           - targets: 
             - 'loki-minio-svc.monitoring.svc.cluster.local:9000'
+      - job_name: 'api-backend'
+        metrics_path: '/metrics'
+        static_configs:
+          - targets:
+              - 'api-backend.pipeline.svc.cluster.local'
 
 grafana:
   enabled: true

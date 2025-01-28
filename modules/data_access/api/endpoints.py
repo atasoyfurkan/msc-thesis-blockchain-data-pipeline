@@ -5,11 +5,17 @@ import os
 from io import BytesIO
 from typing import Optional
 import logging
+import time
 from fastapi import APIRouter, HTTPException, Response, Query, Depends
 import pyarrow as pa
 import pyarrow.parquet as pq
+from prometheus_client import Histogram
 
 logging.basicConfig(level=os.getenv("LOGGING_LEVEL", "INFO"), format="%(asctime)s [%(levelname)s] %(message)s")
+
+# Prometheus metrics
+QUERY_LATENCY = Histogram('api_backend_query_latency_seconds', 'Time taken to execute DuckDB queries')
+
 
 # Load environment variables
 MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT")
@@ -65,6 +71,8 @@ def get_table_path(
 @router.get("/query")
 def query_duckdb(query: str, user = Depends(authenticate_user)):
     """Execute a query on DuckDB and return compressed Parquet data."""
+    start_time = time.time()
+
     try:
         # Query DuckDB
         result_df = duckdb_manager.query(query)
@@ -81,6 +89,7 @@ def query_duckdb(query: str, user = Depends(authenticate_user)):
             "Content-Type": "application/vnd.apache.parquet"
         }
 
+        QUERY_LATENCY.observe(time.time() - start_time)
         return Response(content=output.read(), headers=headers)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Query execution failed: {e}")

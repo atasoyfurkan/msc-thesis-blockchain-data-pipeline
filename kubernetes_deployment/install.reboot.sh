@@ -1,5 +1,6 @@
 ##### Install Docker ######
 # Mount the SSD storage
+mkdir -p /mnt/sda
 mount /dev/sda /mnt/sda
 
 # Persist Docker data
@@ -68,7 +69,6 @@ sudo apt-get update
 sudo apt-get install helm
 
 ##### Connect to NFS Storage  #####
-
 # Prepare network VLAN connection for NFS
 sudo ip link set dev eno4 up
 sudo ip addr add 192.168.242.12/24 dev eno4
