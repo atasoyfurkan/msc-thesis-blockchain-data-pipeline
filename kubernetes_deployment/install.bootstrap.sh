@@ -107,6 +107,8 @@ kubectl apply -f monitoring/prometheus-grafana/dashboards/minio-bucket-dashboard
 kubectl apply -f monitoring/prometheus-grafana/dashboards/minio-cluster-dashboard-configmap.yaml
 kubectl apply -f monitoring/prometheus-grafana/dashboards/jupyterhub-dashboard-configmap.yaml
 kubectl apply -f monitoring/prometheus-grafana/dashboards/jupyterhub-user-diagnostic-dashboard-configmap.yaml
+kubectl apply -f monitoring/prometheus-grafana/dashboards/evaluation-metrics-data-dashboard-configmap.yaml
+kubectl apply -f monitoring/prometheus-grafana/dashboards/evaluation-metrics-resource-dashboard-configmap.yaml
 sudo mount --make-rshared / # allowing mount events to propagate between namespaces (necessary for Kubernetes) 
 helm upgrade --install \
     --namespace monitoring \
