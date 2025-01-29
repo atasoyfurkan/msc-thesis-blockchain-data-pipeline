@@ -78,3 +78,8 @@ apt install nfs-common
 echo "192.168.242.1:/pipeline_minio_data  /mnt/pipeline_minio_data nfs4 _netdev,rw,rsize=16384,wsize=16384 0 0" | sudo tee -a /etc/fstab
 mkdir -p /mnt/pipeline_minio_data
 mount /mnt/pipeline_minio_data
+
+##### Define Public IP #####
+
+sudo ip addr add 131.159.14.109/25 dev eno6
+sudo ip route add default via 131.159.14.126 dev eno6
