@@ -32,7 +32,7 @@ spec:
                 name: pipeline-env
                 key: ethereum-node-http-url
           - name: SAVE_BATCH_SIZE
-            value: "100"
+            value: "300"
           - name: MINIO_BUCKET
             value: "transfer-event-data"
           - name: MINIO_ENDPOINT
