@@ -86,3 +86,5 @@ class DataPipelineClient:
         except HTTPError as exception:
             if exception.response.status_code == 500:
                 raise HTTPError(f"Internal Server Error (500): Failed to execute query {response.text}")
+            if exception.response.status_code == 504:
+                raise HTTPError(f"Gateway Timeout (504): Query execution timed out {response.text}. Please run a smaller query.")

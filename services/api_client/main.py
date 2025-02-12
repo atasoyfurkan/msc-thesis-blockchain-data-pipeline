@@ -27,7 +27,6 @@ def main():
     query=f"""
     SELECT *
     FROM {table_path}
-    WHERE gas_price > 1000000000
     """
     query_result = client.query(query=query)
     print(query_result)

@@ -22,6 +22,11 @@ MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT")
 MINIO_ROOT_USER = os.getenv("MINIO_ROOT_USER")
 MINIO_ROOT_PASSWORD = os.getenv("MINIO_ROOT_PASSWORD")
 
+QUERY_TIMEOUT_SECONDS = float(os.getenv("QUERY_TIMEOUT_SECONDS"))
+
+if not MINIO_ENDPOINT or not MINIO_ROOT_USER or not MINIO_ROOT_PASSWORD or not QUERY_TIMEOUT_SECONDS:
+    raise ValueError("Missing required environment variables")
+
 # Initialize clients
 minio_client = MinioReadClient(
     endpoint=MINIO_ENDPOINT,
@@ -75,7 +80,7 @@ def query_duckdb(query: str, user = Depends(authenticate_user)):
 
     try:
         # Query DuckDB
-        result_df = duckdb_manager.query(query)
+        result_df = duckdb_manager.query_with_timeout(query, timeout=QUERY_TIMEOUT_SECONDS)
         
         # Convert DataFrame to Parquet in-memory
         table = pa.Table.from_pandas(result_df)
@@ -89,7 +94,10 @@ def query_duckdb(query: str, user = Depends(authenticate_user)):
             "Content-Type": "application/vnd.apache.parquet"
         }
 
+        logging.debug(f"Query latency: {time.time() - start_time}")
         QUERY_LATENCY.observe(time.time() - start_time)
         return Response(content=output.read(), headers=headers)
+    except TimeoutError as e:
+        raise HTTPException(status_code=504, detail=f"Query execution timed out and was cancelled: {e}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Query execution failed: {e}")

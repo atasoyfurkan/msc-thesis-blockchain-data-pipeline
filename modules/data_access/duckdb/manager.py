@@ -1,7 +1,9 @@
 import duckdb
 import logging
 from datetime import datetime, timedelta
-
+import multiprocessing
+import os
+import signal
 class DuckDBManager:
     """Handles querying Parquet files stored in MinIO using DuckDB."""
 
@@ -17,10 +19,12 @@ class DuckDBManager:
             SET s3_secret_access_key='{self.minio_read_client.secret_key}';
             SET s3_use_ssl=false;
             SET s3_url_style='path';
+            SET http_timeout=5000;
+            SET http_keep_alive=false;
         """)
         return conn
 
-    def query(self, query):
+    def query(self, query: str):
         """
         Queries files stored in MinIO using DuckDB.
         """
@@ -33,6 +37,36 @@ class DuckDBManager:
             raise e
         finally:
             conn.close()
+
+    def _query_subprocess(self, query: str, result_queue: multiprocessing.Queue):
+        """Executes a DuckDB query inside a subprocess and puts the result in a queue."""
+        try:
+            result_df = self.query(query)
+            result_queue.put(result_df)
+        except Exception as e:
+            result_queue.put(f"ERROR:{str(e)}")
+
+    def query_with_timeout(self, query: str, timeout: float):
+        """
+        Queries files stored in MinIO using DuckDB with custom timeout implementation which uses subprocessses
+        Since duckdb doesn't have built-in timeout support, we use multiprocessing to run the query in a separate process.
+        """
+        result_queue = multiprocessing.Queue()
+        process = multiprocessing.Process(target=self._query_subprocess, args=(query, result_queue))
+        process.start()
+
+        try:
+            result_df = result_queue.get(timeout=timeout)
+            return result_df
+        except multiprocessing.queues.Empty:
+            if process.is_alive() and os.path.exists(f"/proc/{process.pid}"): # Check if the process is still alive
+                logging.info(f"Process timed out. Terminating process {process.pid}")
+                os.kill(process.pid, signal.SIGKILL)
+            
+            raise TimeoutError(f"Query timed out after {timeout} seconds")
+        finally:
+            process.join() # Ensure cleanup
+            logging.debug(f"Process successfully cleaned up")
 
     def _get_table_path_with_file_name(self, bucket_name: str, file_name: str):
         """

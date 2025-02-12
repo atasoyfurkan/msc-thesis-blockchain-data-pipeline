@@ -20,3 +20,7 @@
 ### Get folder storage usage linux
 
    du -h --max-depth=1
+
+### Pre-pull images if it stucks
+
+   sudo ctr images pull docker.io/atasoy/pipeline-api-backend:v1.4
