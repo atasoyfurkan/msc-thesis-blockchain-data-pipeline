@@ -44,8 +44,8 @@ helm upgrade --install \
     minio-datalake minio-operator/tenant
 
 # Deploy shared configs for pipeline
-kubectl apply -f shared_configs/pipeline_configmap.yaml
-kubectl apply -f shared_configs/pipeline_secret.yaml
+kubectl apply -f shared_pipeline_configmap.yaml
+kubectl apply -f shared_pipeline_secret.yaml
 
 # Deploy api-backend
 ## Build and push docker image
@@ -63,58 +63,58 @@ kubectl apply -f api_backend/ingress.yaml
 ## Build and push docker image
 docker buildx build --platform linux/amd64 \
   -t atasoy/pipeline-mempool-fetcher:v1.10 \
-  --file ../services/mempool_fetcher/Dockerfile \
+  --file ../services/fetchers/mempool_fetcher/Dockerfile \
   ../ \
   --push
 ## Apply kubernetes manifests
-kubectl apply -f mempool_fetcher/deployment.yaml
+kubectl apply -f fetchers/mempool_fetcher/deployment.yaml
 
 # Deploy block-fetcher
 ## Build and push docker image
 docker buildx build --platform linux/amd64 \
   -t atasoy/pipeline-block-fetcher:v1.5 \
-  --file ../services/block_fetcher/Dockerfile \
+  --file ../services/fetchers/block_fetcher/Dockerfile \
   ../ \
   --push
 ## Apply kubernetes manifests
-kubectl apply -f block_fetcher/deployment.yaml
+kubectl apply -f fetchers/block_fetcher/deployment.yaml
 
 # Deploy price-data-fetcher
 ## Build and push docker image
 docker buildx build --platform linux/amd64 \
   -t atasoy/pipeline-price-data-fetcher:v1.6 \
-  --file ../services/price_data_fetcher/Dockerfile \
+  --file ../services/fetchers/price_data_fetcher/Dockerfile \
   ../ \
   --push
 ## Apply kubernetes manifests
-kubectl apply -f price_data_fetcher/deployment.yaml
+kubectl apply -f fetchers/price_data_fetcher/deployment.yaml
 
 # Deploy transfer-event-fetcher
 ## Build and push docker image
 docker buildx build --platform linux/amd64 \
   -t atasoy/pipeline-transfer-event-fetcher:v1.6 \
-  --file ../services/transfer_event_fetcher/Dockerfile \
+  --file ../services/fetchers/transfer_event_fetcher/Dockerfile \
   ../ \
   --push
 ## Apply kubernetes manifests
-kubectl apply -f transfer_event_fetcher/deployment.yaml
+kubectl apply -f fetchers/transfer_event_fetcher/deployment.yaml
 
-# Deploy shared configs for simulation
-kubectl apply -f shared_configs/simulation_configmap.yaml
-kubectl apply -f shared_configs/simulation_secret.yaml
+# Deploy shared configs for simulators
+kubectl apply -f simulators/shared_simulator_configmap.yaml
+kubectl apply -f simulators/shared_simulator_secret.yaml
 
-# Create namespace for simulation
-kubectl create namespace simulation
+# Create namespace for simulators
+kubectl create namespace simulator
 
 # Deploy trade-researcher-simulator
 ## Build and push docker image
 docker buildx build --platform linux/amd64 \
   -t atasoy/pipeline-trade-researcher-simulator:v1.2 \
-  --file ../services/trade_researcher_simulator/Dockerfile \
+  --file ../services/simulators/trade_researcher_simulator/Dockerfile \
   ../ \
   --push
 ## Apply kubernetes manifests
-kubectl apply -f trade_researcher_simulator/deployment.yaml
+kubectl apply -f simulators/trade_researcher_simulator/deployment.yaml
 
 # Install prometheus and grafana
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts

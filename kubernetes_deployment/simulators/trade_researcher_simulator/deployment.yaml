@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: trade-researcher-simulator
-  namespace: simulation
+  namespace: simulator
   labels:
     app: trade-researcher-simulator
 spec:

@@ -2,7 +2,7 @@
 FROM python:3.9-slim as build
 
 WORKDIR /app
-RUN pip install websocket-client pandas pyarrow requests minio prometheus_client
+RUN pip install pandas pyarrow requests minio prometheus_client
 
 # Stage 2: Final Image
 FROM python:3.9-slim
@@ -15,7 +15,7 @@ WORKDIR /app
 # copy other modules
 COPY modules modules
 # copy main.py
-COPY services/mempool_fetcher/main.py main.py
+COPY services/fetchers/price_data_fetcher/main.py main.py
 
 # set root directory
 ENV PYTHONPATH=/app

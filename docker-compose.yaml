@@ -18,9 +18,9 @@ services:
   mempool_fetcher:
     build:
       context: .
-      dockerfile: ./services/mempool_fetcher/Dockerfile
+      dockerfile: ./services/fetchers/mempool_fetcher/Dockerfile
     env_file: 
-      - ./services/mempool_fetcher/.env
+      - ./services/fetchers/mempool_fetcher/.env
       - ./services/minio_config/.env
       - ./services/ethereum_node_config/.env
     depends_on:
@@ -30,9 +30,9 @@ services:
   block_fetcher:
     build:
       context: .
-      dockerfile: ./services/block_fetcher/Dockerfile
+      dockerfile: ./services/fetchers/block_fetcher/Dockerfile
     env_file: 
-      - ./services/block_fetcher/.env
+      - ./services/fetchers/block_fetcher/.env
       - ./services/minio_config/.env
       - ./services/ethereum_node_config/.env
     depends_on:
@@ -42,9 +42,9 @@ services:
   transfer_event_fetcher:
     build:
       context: .
-      dockerfile: ./services/transfer_event_fetcher/Dockerfile
+      dockerfile: ./services/fetchers/transfer_event_fetcher/Dockerfile
     env_file: 
-      - ./services/transfer_event_fetcher/.env
+      - ./services/fetchers/transfer_event_fetcher/.env
       - ./services/minio_config/.env
       - ./services/ethereum_node_config/.env
     depends_on:
@@ -54,9 +54,9 @@ services:
   price_data_fetcher:
     build:
       context: .
-      dockerfile: ./services/price_data_fetcher/Dockerfile
+      dockerfile: ./services/fetchers/price_data_fetcher/Dockerfile
     env_file: 
-      - ./services/price_data_fetcher/.env
+      - ./services/fetchers/price_data_fetcher/.env
       - ./services/minio_config/.env
     depends_on:
       - minio
@@ -87,9 +87,9 @@ services:
   trade_researcher_simulator:
     build: 
       context: .
-      dockerfile: ./services/trade_researcher_simulator/Dockerfile
+      dockerfile: ./services/simulators/trade_researcher_simulator/Dockerfile
     env_file: 
-      - ./services/trade_researcher_simulator/.env
+      - ./services/simulators/trade_researcher_simulator/.env
     command: ["sh", "-c", "sleep 5 && python main.py"]
     depends_on:
       - api_backend

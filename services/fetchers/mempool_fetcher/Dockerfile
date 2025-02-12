@@ -15,9 +15,7 @@ WORKDIR /app
 # copy other modules
 COPY modules modules
 # copy main.py
-COPY services/transfer_event_fetcher/main.py main.py
-# copy token_configurations.json
-COPY services/transfer_event_fetcher/token_configurations.json token_configurations.json
+COPY services/fetchers/mempool_fetcher/main.py main.py
 
 # set root directory
 ENV PYTHONPATH=/app

@@ -15,7 +15,7 @@ WORKDIR /app
 # copy other modules
 COPY modules modules
 # copy main.py
-COPY services/trade_researcher_simulator/main.py main.py
+COPY services/simulators/trade_researcher_simulator/main.py main.py
 
 # set root directory
 ENV PYTHONPATH=/app
