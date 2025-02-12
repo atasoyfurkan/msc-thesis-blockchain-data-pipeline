@@ -99,12 +99,12 @@ docker buildx build --platform linux/amd64 \
 ## Apply kubernetes manifests
 kubectl apply -f fetchers/transfer_event_fetcher/deployment.yaml
 
+# Create namespace for simulators
+kubectl create namespace simulator
+
 # Deploy shared configs for simulators
 kubectl apply -f simulators/shared_simulator_configmap.yaml
 kubectl apply -f simulators/shared_simulator_secret.yaml
-
-# Create namespace for simulators
-kubectl create namespace simulator
 
 # Deploy trade-researcher-simulator
 ## Build and push docker image

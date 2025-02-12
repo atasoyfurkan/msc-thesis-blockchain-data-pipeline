@@ -26,10 +26,10 @@ spec:
           - name: PIPELINE_API_BACKEND_URL
             valueFrom:
               configMapKeyRef:
-                name: simulation-env
+                name: simulator-env
                 key: pipeline-api-backend-endpoint
           - name: JUPYTERHUB_API_TOKEN
             valueFrom:
               secretKeyRef:
-                name: simulation-secret
+                name: simulator-secret
                 key: jupyterhub-api-token
