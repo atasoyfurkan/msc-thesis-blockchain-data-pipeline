@@ -5,5 +5,5 @@ metadata:
   namespace: pipeline 
 spec:
   hard:
-    cpu: 7500m        
-    memory: 80Gi     
+    limits.cpu: 7500m
+    limits.memory: 80Gi
