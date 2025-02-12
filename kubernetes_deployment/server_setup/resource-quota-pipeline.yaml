@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ResourceQuota
-metadata:
-  name: pipeline-quota  
-  namespace: pipeline 
-spec:
-  hard:
-    limits.cpu: 7500m
-    limits.memory: 80Gi
