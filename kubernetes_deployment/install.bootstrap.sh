@@ -116,6 +116,18 @@ docker buildx build --platform linux/amd64 \
 ## Apply kubernetes manifests
 kubectl apply -f simulators/trade_researcher_simulator/deployment.yaml
 
+# Deploy validation-researcher-simulator
+## Build and push docker image
+docker buildx build --platform linux/amd64 \
+  -t atasoy/pipeline-validation-researcher-simulator:v1.0 \
+  --file ../services/simulators/validation_researcher_simulator/Dockerfile \
+  ../ \
+  --push
+## Apply kubernetes manifests
+kubectl apply -f simulators/validation_researcher_simulator/deployment.yaml
+
+
+
 # Install prometheus and grafana
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update

@@ -1,4 +1,5 @@
-from modules.data_access.workload_simulator.trade_researcher_simulator import TradeResearcherWorkloadSimulator
+from modules.data_access.workload_simulator.workload_simulator import WorkloadSimulator
+from modules.data_access.workload_simulator.trade_researcher_notebook import run_trade_researcher_notebook
 import logging
 import os
 
@@ -10,7 +11,7 @@ def main():
     if not MEAN_INTERARRIVAL_TIME_SECONDS:
         raise ValueError("Missing required environment variable")
 
-    simulator = TradeResearcherWorkloadSimulator(mean_interarrival_time_seconds=MEAN_INTERARRIVAL_TIME_SECONDS)
+    simulator = WorkloadSimulator(mean_interarrival_time_seconds=MEAN_INTERARRIVAL_TIME_SECONDS, notebook_runner=run_trade_researcher_notebook)
     simulator.run()
 
 if __name__ == "__main__":

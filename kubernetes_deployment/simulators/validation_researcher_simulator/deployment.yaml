@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: validation-researcher-simulator
+  namespace: simulator
+  labels:
+    app: validation-researcher-simulator
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: validation-researcher-simulator
+  template:
+    metadata:
+      labels:
+        app: validation-researcher-simulator
+    spec:
+      containers:
+      - name: validation-researcher-simulator
+        image: atasoy/pipeline-validation-researcher-simulator:v1.0
+        env:
+          - name: LOGGING_LEVEL
+            value: "INFO"
+          - name: MEAN_INTERARRIVAL_TIME_SECONDS
+            value: "3600"
+          - name: PIPELINE_API_BACKEND_URL
+            valueFrom:
+              configMapKeyRef:
+                name: simulator-env
+                key: pipeline-api-backend-endpoint
+          - name: JUPYTERHUB_API_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: simulator-secret
+                key: jupyterhub-api-token
