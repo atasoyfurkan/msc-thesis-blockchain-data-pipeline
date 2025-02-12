@@ -43,14 +43,14 @@ helm upgrade --install \
     --values minio/values.yaml \
     minio-datalake minio-operator/tenant
 
-# Deploy shared configs
-kubectl apply -f shared_configmap.yaml
-kubectl apply -f shared_secret.yaml
+# Deploy shared configs for pipeline
+kubectl apply -f shared_configs/pipeline_configmap.yaml
+kubectl apply -f shared_configs/pipeline_secret.yaml
 
 # Deploy api-backend
 ## Build and push docker image
 docker buildx build --platform linux/amd64 \
-  -t atasoy/pipeline-api-backend:v1.8 \
+  -t atasoy/pipeline-api-backend:v1.10 \
   --file ../services/api_backend/Dockerfile \
   ../ \
   --push
@@ -99,8 +99,22 @@ docker buildx build --platform linux/amd64 \
 ## Apply kubernetes manifests
 kubectl apply -f transfer_event_fetcher/deployment.yaml
 
-# Define resource quota for the pipeline
-kubectl apply -f server_setup/resource-quota-pipeline.yaml
+# Deploy shared configs for simulation
+kubectl apply -f shared_configs/simulation_configmap.yaml
+kubectl apply -f shared_configs/simulation_secret.yaml
+
+# Create namespace for simulation
+kubectl create namespace simulation
+
+# Deploy trade-researcher-simulator
+## Build and push docker image
+docker buildx build --platform linux/amd64 \
+  -t atasoy/pipeline-trade-researcher-simulator:v1.2 \
+  --file ../services/trade_researcher_simulator/Dockerfile \
+  ../ \
+  --push
+## Apply kubernetes manifests
+kubectl apply -f trade_researcher_simulator/deployment.yaml
 
 # Install prometheus and grafana
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts

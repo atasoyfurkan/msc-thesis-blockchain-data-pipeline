@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: simulation-env
+  namespace: simulation
+data:
+  pipeline-api-backend-endpoint: "https://api-backend.old-pipeline.atasoyfurkan.live"
