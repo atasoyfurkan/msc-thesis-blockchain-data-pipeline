@@ -57,6 +57,10 @@ class DuckDBManager:
 
         try:
             result_df = result_queue.get(timeout=timeout)
+
+            if isinstance(result_df, str) and result_df.startswith("ERROR:"):
+                raise Exception(result_df[6:])
+
             return result_df
         except multiprocessing.queues.Empty:
             if process.is_alive() and os.path.exists(f"/proc/{process.pid}"): # Check if the process is still alive
