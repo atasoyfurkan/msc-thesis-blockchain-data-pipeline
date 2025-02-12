@@ -99,6 +99,9 @@ docker buildx build --platform linux/amd64 \
 ## Apply kubernetes manifests
 kubectl apply -f transfer_event_fetcher/deployment.yaml
 
+# Define resource quota for the pipeline
+kubectl apply -f server_setup/resource-quota-pipeline.yaml
+
 # Install prometheus and grafana
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update

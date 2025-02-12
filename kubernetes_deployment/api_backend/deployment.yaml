@@ -42,6 +42,13 @@ spec:
               secretKeyRef:
                 name: pipeline-secret
                 key: minio-root-password
+        resources:
+          requests:
+            memory: 200Mi
+            cpu: 100m         
+          limits:
+            memory: 24Gi
+            cpu: 3500m         
         livenessProbe:
           httpGet:
             path: /

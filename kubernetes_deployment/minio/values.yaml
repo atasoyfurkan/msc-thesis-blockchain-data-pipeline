@@ -182,7 +182,13 @@ tenant:
       #
       # These settings can control the minimum and maximum resources requested for each pod.
       # If no worker nodes can meet the specified requests, the Operator may fail to deploy.
-      resources: { }
+      resources: 
+        requests:
+          memory: 500Mi # Guarantees RAM per pod
+          cpu: 100m     # Guarantees CPU core per pod
+        limits:
+          memory: 5Gi # Allows up to CPU core per pod
+          cpu: 1125m  # Allows up to RAM core per pod
       ###
       # The Kubernetes `SecurityContext <https://kubernetes.io/docs/tasks/configure-pod-container/security-context/>`__ to use for deploying Tenant resources.
       #
