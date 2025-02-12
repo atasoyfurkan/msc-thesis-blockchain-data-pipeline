@@ -5,6 +5,8 @@ metadata:
   namespace: pipeline
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "420"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "420"
 spec:
   ingressClassName: nginx
   tls:
