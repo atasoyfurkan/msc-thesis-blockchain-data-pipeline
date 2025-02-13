@@ -6,7 +6,7 @@ metadata:
   labels:
     app: validation-researcher-simulator
 spec:
-  replicas: 10
+  replicas: 20
   selector:
     matchLabels:
       app: validation-researcher-simulator

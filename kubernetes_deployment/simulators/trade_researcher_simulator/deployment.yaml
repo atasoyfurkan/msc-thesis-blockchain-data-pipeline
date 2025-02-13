@@ -6,7 +6,7 @@ metadata:
   labels:
     app: trade-researcher-simulator
 spec:
-  replicas: 10
+  replicas: 20
   selector:
     matchLabels:
       app: trade-researcher-simulator
