@@ -70,7 +70,7 @@ class DataPipelineClient:
             if exception.response.status_code == 400:
                 raise ValueError(f"Invalid request (400): {response.text}")
 
-    def query(self, query: str) -> pd.DataFrame:
+    def execute_query(self, query: str) -> pd.DataFrame:
         """
         Execute a query on DuckDB and return the result as a pandas DataFrame.
         :param query: The SQL query to execute.

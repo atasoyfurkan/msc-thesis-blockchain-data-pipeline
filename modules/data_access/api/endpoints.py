@@ -74,13 +74,13 @@ def get_table_path(
         raise HTTPException(status_code=500, detail=f"Failed to generate table path: {e}")
 
 @router.get("/query")
-def query_duckdb(query: str, user = Depends(authenticate_user)):
+def execute_query_duckdb(query: str, user = Depends(authenticate_user)):
     """Execute a query on DuckDB and return compressed Parquet data."""
     start_time = time.time()
 
     try:
         # Query DuckDB
-        result_df = duckdb_manager.query_with_timeout(query, timeout=QUERY_TIMEOUT_SECONDS)
+        result_df = duckdb_manager.execute_query_with_timeout(query, timeout=QUERY_TIMEOUT_SECONDS)
         logging.debug(f"Query result: {result_df}")
         
         # Convert DataFrame to Parquet in-memory

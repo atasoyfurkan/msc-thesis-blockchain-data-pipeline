@@ -28,7 +28,7 @@ def main():
     SELECT *
     FROM {table_path}
     """
-    query_result = client.query(query=query)
+    query_result = client.execute_query(query=query)
     print(query_result)
 
 

@@ -23,7 +23,7 @@ def run_trade_researcher_notebook(client: DataPipelineClient, start_index: int, 
     # In[78]:
 
 
-    result = client.query(f"""
+    result = client.execute_query(f"""
     SELECT *    
     FROM {transfer_table_path}
     LIMIT 3
@@ -35,7 +35,7 @@ def run_trade_researcher_notebook(client: DataPipelineClient, start_index: int, 
     # In[77]:
 
 
-    transfer_df = client.query(f"""
+    transfer_df = client.execute_query(f"""
     SELECT symbol, value, block_created_at
     FROM {transfer_table_path}
     """)
@@ -73,7 +73,7 @@ def run_trade_researcher_notebook(client: DataPipelineClient, start_index: int, 
     # In[42]:
 
 
-    result = client.query(f"""
+    result = client.execute_query(f"""
     SELECT *    
     FROM {price_table_path}
     WHERE symbol = 'ETHUSDT'
@@ -86,12 +86,12 @@ def run_trade_researcher_notebook(client: DataPipelineClient, start_index: int, 
     # In[43]:
 
 
-    price_data_eth_df = client.query(f"""
+    price_data_eth_df = client.execute_query(f"""
     SELECT *    
     FROM {price_table_path}
     WHERE symbol = 'ETHUSDT'
     """)
-    price_data_bnb_df = client.query(f"""
+    price_data_bnb_df = client.execute_query(f"""
     SELECT *    
     FROM {price_table_path}
     WHERE symbol = 'BNBUSDT'
@@ -141,7 +141,7 @@ def run_trade_researcher_notebook(client: DataPipelineClient, start_index: int, 
     # In[47]:
 
 
-    high_transfer_df = client.query(f"""
+    high_transfer_df = client.execute_query(f"""
     SELECT symbol, value, block_created_at
     FROM {transfer_table_path}
     WHERE value > {threshold_value}
@@ -220,7 +220,7 @@ def run_trade_researcher_notebook(client: DataPipelineClient, start_index: int, 
     # In[35]:
 
 
-    high_transfer_with_pricing_df = client.query(f"""
+    high_transfer_with_pricing_df = client.execute_query(f"""
     WITH high_value_transfers AS (
         SELECT *
         FROM {transfer_table_path}

@@ -25,7 +25,7 @@ def run_validation_researcher_notebook(client: DataPipelineClient, start_index: 
     # In[42]:
 
 
-    df = client.query(f"""
+    df = client.execute_query(f"""
     SELECT *    
     FROM {transaction_table_path}
     LIMIT 3
@@ -37,7 +37,7 @@ def run_validation_researcher_notebook(client: DataPipelineClient, start_index: 
     # In[43]:
 
 
-    transaction_df = client.query(f"""
+    transaction_df = client.execute_query(f"""
     SELECT t.hash, t.estimated_effective_gas_price as gas_price, t.max_priority_fee_per_gas, t.max_fee_per_gas, t.fetched_at, t.from, t.to
     FROM {transaction_table_path} t
     """)
@@ -84,7 +84,7 @@ def run_validation_researcher_notebook(client: DataPipelineClient, start_index: 
     # In[51]:
 
 
-    high_gas_transactions_df = client.query(f"""
+    high_gas_transactions_df = client.execute_query(f"""
     SELECT hash, estimated_effective_gas_price as gas_price, max_priority_fee_per_gas, max_fee_per_gas, 
         fetched_at
     FROM {transaction_table_path}
@@ -128,7 +128,7 @@ def run_validation_researcher_notebook(client: DataPipelineClient, start_index: 
     # In[56]:
 
 
-    df = client.query(f"""
+    df = client.execute_query(f"""
     SELECT *    
     FROM {block_header_table_path}
     """)
@@ -139,7 +139,7 @@ def run_validation_researcher_notebook(client: DataPipelineClient, start_index: 
     # In[24]:
 
 
-    sandwich_attacks_df = client.query(f"""
+    sandwich_attacks_df = client.execute_query(f"""
     WITH mempool_txns AS (
         SELECT hash, estimated_effective_gas_price AS gas_price, latest_block_base_fee_per_gas
         FROM {transaction_table_path}

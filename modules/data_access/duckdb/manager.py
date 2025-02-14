@@ -24,7 +24,7 @@ class DuckDBManager:
         """)
         return conn
 
-    def query(self, query: str):
+    def execute_query(self, query: str):
         """
         Queries files stored in MinIO using DuckDB.
         """
@@ -38,21 +38,21 @@ class DuckDBManager:
         finally:
             conn.close()
 
-    def _query_subprocess(self, query: str, result_queue: multiprocessing.Queue):
+    def _execute_query_subprocess(self, query: str, result_queue: multiprocessing.Queue):
         """Executes a DuckDB query inside a subprocess and puts the result in a queue."""
         try:
-            result_df = self.query(query)
+            result_df = self.execute_query(query)
             result_queue.put(result_df)
         except Exception as e:
             result_queue.put(f"ERROR:{str(e)}")
 
-    def query_with_timeout(self, query: str, timeout: float):
+    def execute_query_with_timeout(self, query: str, timeout: float):
         """
         Queries files stored in MinIO using DuckDB with custom timeout implementation which uses subprocessses
         Since duckdb doesn't have built-in timeout support, we use multiprocessing to run the query in a separate process.
         """
         result_queue = multiprocessing.Queue()
-        process = multiprocessing.Process(target=self._query_subprocess, args=(query, result_queue))
+        process = multiprocessing.Process(target=self._execute_query_subprocess, args=(query, result_queue))
         process.start()
 
         try:
