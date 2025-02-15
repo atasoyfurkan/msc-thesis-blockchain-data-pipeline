@@ -27,6 +27,8 @@ spec:
             value: "https://hub.atasoyfurkan.live"
           - name: QUERY_TIMEOUT_SECONDS
             value: "300"
+          - name: PERSISTENT_QUERY_RETENTION_DAYS
+            value: "30"
           - name: MINIO_ENDPOINT
             valueFrom:
               configMapKeyRef:
