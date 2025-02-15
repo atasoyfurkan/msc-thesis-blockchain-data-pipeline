@@ -56,7 +56,7 @@ class DataPipelineClientWithCachingProbability(DataPipelineClient):
         """Check if the query is already persisted in the cache."""
         metadata_df = self.list_persistent_queries(custom_username=custom_username)
         query = PersistentQueryManager.clean_query(query)
-        return query in metadata_df["query"].values
+        return "query" in metadata_df and query in metadata_df["query"].values
 
     def execute_query(self, query: str, persist: bool = False, custom_username: Optional[str] = None):
         if random.random() < self.persistent_query_usage_probability and self._is_query_already_persisted(query, self.unique_username):

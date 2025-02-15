@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: trade-researcher-simulator
-        image: atasoy/pipeline-trade-researcher-simulator:v1.4
+        image: atasoy/pipeline-trade-researcher-simulator:v1.5
         env:
           - name: LOGGING_LEVEL
             value: "INFO"

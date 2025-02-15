@@ -3,11 +3,11 @@ import typing
 import hashlib
 from datetime import datetime, timedelta
 import logging 
+import pandas as pd
 
 if typing.TYPE_CHECKING:
     from modules.data_storage.minio.write_client import MinioWriteClient
     from modules.data_access.duckdb.manager import DuckDBManager
-    import pandas as pd
 
 PERSISTENT_QUERY_BUCKET_NAME = "persistent-queries"
 
@@ -82,13 +82,16 @@ class PersistentQueryManager:
         """
         List all the persisted queries metadata for a user.
         """
-        prefix = self._build_metadata_minio_prefix(username)
-        table_path = self.duckdb_manager.get_table_path_with_prefix(bucket_name=self.bucket_name, prefix=prefix, create_if_not_exist=True)
-        
-        metadata_df = self.duckdb_manager.execute_query(f"SELECT * FROM {table_path}")
-        logging.debug(f"Metadata: {metadata_df}")
-
-        return metadata_df
+        try:
+            prefix = self._build_metadata_minio_prefix(username)
+            table_path = self.duckdb_manager.get_table_path_with_prefix(bucket_name=self.bucket_name, prefix=prefix)
+            
+            metadata_df = self.duckdb_manager.execute_query(f"SELECT * FROM {table_path}")
+            logging.debug(f"Metadata: {metadata_df}")            
+            return metadata_df
+        except ValueError as e:
+            logging.warning(f"Failed to list metadata: {e}")
+            return pd.DataFrame()
 
     def fetch_data(self, username: str, query: str) -> "pd.DataFrame":
         """

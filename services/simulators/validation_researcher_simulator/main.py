@@ -7,11 +7,18 @@ logging.basicConfig(level=os.getenv("LOGGING_LEVEL", "INFO"), format="%(asctime)
 
 def main():
     MEAN_INTERARRIVAL_TIME_SECONDS = int(os.getenv("MEAN_INTERARRIVAL_TIME_SECONDS"))
+    UNIQUE_USERNAME = os.getenv("UNIQUE_USERNAME")
+    PERSISTENT_QUERY_USAGE_PROBABILITY = float(os.getenv("PERSISTENT_QUERY_USAGE_PROBABILITY"))
 
     if not MEAN_INTERARRIVAL_TIME_SECONDS:
         raise ValueError("Missing required environment variable")
 
-    simulator = WorkloadSimulator(mean_interarrival_time_seconds=MEAN_INTERARRIVAL_TIME_SECONDS, notebook_runner=run_validation_researcher_notebook)
+    simulator = WorkloadSimulator(
+        mean_interarrival_time_seconds=MEAN_INTERARRIVAL_TIME_SECONDS, 
+        unique_username=UNIQUE_USERNAME, 
+        notebook_runner=run_validation_researcher_notebook,
+        persistent_query_usage_probability=PERSISTENT_QUERY_USAGE_PROBABILITY
+    )
     simulator.run()
 
 if __name__ == "__main__":

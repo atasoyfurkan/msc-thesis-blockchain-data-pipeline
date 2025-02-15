@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: validation-researcher-simulator
-        image: atasoy/pipeline-validation-researcher-simulator:v1.2
+        image: atasoy/pipeline-validation-researcher-simulator:v1.3
         env:
           - name: LOGGING_LEVEL
             value: "INFO"
