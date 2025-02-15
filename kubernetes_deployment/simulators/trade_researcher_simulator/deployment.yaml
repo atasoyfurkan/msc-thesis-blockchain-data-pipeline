@@ -6,7 +6,7 @@ metadata:
   labels:
     app: trade-researcher-simulator
 spec:
-  replicas: 20
+  replicas: 15
   selector:
     matchLabels:
       app: trade-researcher-simulator
@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: trade-researcher-simulator
-        image: atasoy/pipeline-trade-researcher-simulator:v1.2
+        image: atasoy/pipeline-trade-researcher-simulator:v1.3
         env:
           - name: LOGGING_LEVEL
             value: "INFO"

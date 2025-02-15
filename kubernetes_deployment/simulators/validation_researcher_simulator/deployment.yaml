@@ -6,7 +6,7 @@ metadata:
   labels:
     app: validation-researcher-simulator
 spec:
-  replicas: 20
+  replicas: 15
   selector:
     matchLabels:
       app: validation-researcher-simulator
@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: validation-researcher-simulator
-        image: atasoy/pipeline-validation-researcher-simulator:v1.0
+        image: atasoy/pipeline-validation-researcher-simulator:v1.1
         env:
           - name: LOGGING_LEVEL
             value: "INFO"

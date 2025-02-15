@@ -100,7 +100,7 @@ def _get_parquet_response_headers():
         "Content-Type": "application/vnd.apache.parquet"
     }
 
-@router.get("/query")
+@router.get("/execute_query")
 def execute_query_duckdb(query: str, persist: bool, custom_username: Optional[str] = None, user = Depends(authenticate_user)):
     """
     Execute a query on DuckDB and return compressed Parquet data.

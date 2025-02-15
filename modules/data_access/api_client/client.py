@@ -87,7 +87,7 @@ class DataPipelineClient:
             if custom_username:
                 params['custom_username'] = custom_username
 
-            response = requests.get(f"{self.base_url}/query", params=params, headers=self._get_auth_headers())
+            response = requests.get(f"{self.base_url}/execute_query", params=params, headers=self._get_auth_headers())
             response.raise_for_status()
 
             # Read the parquet data into a DataFrame
