@@ -1,5 +1,7 @@
 from modules.data_access.duckdb.manager import DuckDBManager
+from modules.data_access.cache.persistent_query_manager import PersistentQueryManager
 from modules.data_storage.minio.read_client import MinioReadClient
+from modules.data_storage.minio.write_client import MinioWriteClient
 from modules.data_access.api.auth import authenticate_user
 import os
 from io import BytesIO
@@ -16,13 +18,13 @@ logging.basicConfig(level=os.getenv("LOGGING_LEVEL", "INFO"), format="%(asctime)
 # Prometheus metrics
 QUERY_LATENCY = Histogram('api_backend_query_latency_seconds', 'Time taken to execute DuckDB queries')
 
-
 # Load environment variables
 MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT")
 MINIO_ROOT_USER = os.getenv("MINIO_ROOT_USER")
 MINIO_ROOT_PASSWORD = os.getenv("MINIO_ROOT_PASSWORD")
 
 QUERY_TIMEOUT_SECONDS = float(os.getenv("QUERY_TIMEOUT_SECONDS"))
+PERSISTENT_QUERY_RETENTION_DAYS = int(os.getenv("PERSISTENT_QUERY_RETENTION_DAYS")) # Number of days to retain the persistent query results
 
 if not MINIO_ENDPOINT or not MINIO_ROOT_USER or not MINIO_ROOT_PASSWORD or not QUERY_TIMEOUT_SECONDS:
     raise ValueError("Missing required environment variables")
@@ -34,6 +36,16 @@ minio_client = MinioReadClient(
     secret_key=MINIO_ROOT_PASSWORD
 )
 duckdb_manager = DuckDBManager(minio_read_client=minio_client)
+
+minio_cache_write_client = MinioWriteClient(
+    endpoint=MINIO_ENDPOINT,
+    access_key=MINIO_ROOT_USER,
+    secret_key=MINIO_ROOT_PASSWORD
+)
+persistent_query_manager = PersistentQueryManager(
+    minio_write_client=minio_cache_write_client, 
+    retention_days=PERSISTENT_QUERY_RETENTION_DAYS
+)
 
 router = APIRouter()
 
@@ -74,14 +86,25 @@ def get_table_path(
         raise HTTPException(status_code=500, detail=f"Failed to generate table path: {e}")
 
 @router.get("/query")
-def execute_query_duckdb(query: str, user = Depends(authenticate_user)):
-    """Execute a query on DuckDB and return compressed Parquet data."""
+def execute_query_duckdb(query: str, persist: bool, custom_username: Optional[str] = None, user = Depends(authenticate_user)):
+    """
+    Execute a query on DuckDB and return compressed Parquet data.
+    Args:
+        query: The SQL query to execute.
+        persist: Whether to persist the query results.
+        custom_username: The custom username to use for the persistent queries (only admin can use this)
+    """
     start_time = time.time()
 
     try:
         # Query DuckDB
         result_df = duckdb_manager.execute_query_with_timeout(query, timeout=QUERY_TIMEOUT_SECONDS)
         logging.debug(f"Query result: {result_df}")
+
+        if persist:
+            username = custom_username if user["admin"] and custom_username else user["name"]
+
+            persistent_query_manager.persist(df=result_df, query=query, username=username)
         
         # Convert DataFrame to Parquet in-memory
         table = pa.Table.from_pandas(result_df)

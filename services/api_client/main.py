@@ -28,7 +28,7 @@ def main():
     SELECT *
     FROM {table_path}
     """
-    query_result = client.execute_query(query=query)
+    query_result = client.execute_query(query=query, persist=True, retention_days=30, custom_username="api_client_user")
     print(query_result)
 
 

@@ -4,4 +4,4 @@ metadata:
   name: simulator-env
   namespace: simulator
 data:
-  pipeline-api-backend-endpoint: "https://api-backend.old-pipeline.atasoyfurkan.live"
+  pipeline-api-backend-endpoint: "http://api-backend.pipeline.atasoyfurkan.live"

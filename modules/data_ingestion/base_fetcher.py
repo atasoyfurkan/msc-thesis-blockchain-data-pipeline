@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from modules.data_storage.minio.write_client import MinioWriteClient
 from typing import Optional
 import time
+from datetime import datetime
 from prometheus_client import CollectorRegistry, Histogram, push_to_gateway
 
 class DataFetcherBase(ABC):
@@ -38,6 +39,19 @@ class DataFetcherBase(ABC):
             logging.info(f"Accumulated {current_count}/{self.save_batch_size} records for saving "
                          f"({progress_percentage:.0f}%)")
 
+    def _build_structured_minio_path(self) -> str:
+        """Create a structured path: `year/month/day/HHMMSS.parquet` for saving to MinIO"""
+        now = datetime.now()
+
+        year = now.strftime('%Y')
+        month = now.strftime('%m')
+        day = now.strftime('%d')
+        time_str = now.strftime('%H%M%S') + f"{now.microsecond // 1000:03d}"
+        filename = f"{time_str}.parquet"
+        minio_path = f"{year}/{month}/{day}/{filename}"
+
+        return minio_path
+
     def save_to_minio(self, data_batch: list[dict], bucket_name: Optional[str] = None, metric_disable: bool = False) -> list[dict]:
         """
         Saves accumulated data to MinIO as a Parquet file. Only save the first `save_batch_size` records.
@@ -50,6 +64,7 @@ class DataFetcherBase(ABC):
 
         self.minio_write_client.upload_table_as_parquet(
             data_batch[:self.save_batch_size], 
+            minio_path=self._build_structured_minio_path(),
             bucket_name=bucket_name, 
             metadata={"Record-Count": len(data_batch[:self.save_batch_size])}
         )

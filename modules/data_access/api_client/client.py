@@ -4,6 +4,7 @@ from requests.exceptions import HTTPError
 import pandas as pd
 import pyarrow.parquet as pq
 from io import BytesIO
+from typing import Optional
 
 class DataPipelineClient:
     """
@@ -70,14 +71,21 @@ class DataPipelineClient:
             if exception.response.status_code == 400:
                 raise ValueError(f"Invalid request (400): {response.text}")
 
-    def execute_query(self, query: str) -> pd.DataFrame:
+    def execute_query(self, query: str, persist: bool = False, custom_username: Optional[str] = None) -> pd.DataFrame:
         """
         Execute a query on DuckDB and return the result as a pandas DataFrame.
-        :param query: The SQL query to execute.
+        :param 
+            query: The SQL query to execute
+            persist: Whether to persist the query results
+            custom_username: The custom username to use for the persistent queries (only admins can use this)
         :return: pandas DataFrame containing the query result.
         """
         try:
-            response = requests.get(f"{self.base_url}/query", params={'query': query}, headers=self._get_auth_headers())
+            params = {'query': query, 'persist': persist}
+            if custom_username:
+                params['custom_username'] = custom_username
+
+            response = requests.get(f"{self.base_url}/query", params=params, headers=self._get_auth_headers())
             response.raise_for_status()
 
             # Read the parquet data into a DataFrame
