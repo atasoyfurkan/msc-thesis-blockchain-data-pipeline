@@ -1,7 +1,7 @@
 from pathlib import Path
 from minio import Minio
 from minio.error import S3Error
-from minio.lifecycleconfig import LifecycleConfig, Expiration, Rule
+from minio.lifecycleconfig import LifecycleConfig, Expiration, Rule, Filter
 import pandas as pd
 import logging
 from typing import Optional
@@ -113,14 +113,15 @@ class MinioWriteClient:
         rule = Rule(
             rule_id="expire-objects-after-{}-days".format(retention_days),  # Unique rule ID
             status="Enabled",
-            expiretion=Expiration(days=retention_days),
+            expiration=Expiration(days=retention_days),
+            rule_filter=Filter(prefix="")
         )
         lifecycle_config = LifecycleConfig([rule])
         bucket_name = self._get_bucket_name(bucket_name)
 
         try:
             self.client.set_bucket_lifecycle(bucket_name, lifecycle_config)
-            logging.info(f"Set retention days for bucket {bucket_name} to {retention_days}")
+            logging.debug(f"Set retention days for bucket {bucket_name} to {retention_days}")
         except S3Error as e:
             logging.error(f"Failed to set retention days for bucket {bucket_name}: {e}")
             raise e

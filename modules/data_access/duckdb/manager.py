@@ -4,6 +4,11 @@ from datetime import datetime, timedelta
 import multiprocessing
 import os
 import signal
+import typing
+
+if typing.TYPE_CHECKING:
+    import pandas as pd
+
 class DuckDBManager:
     """Handles querying Parquet files stored in MinIO using DuckDB."""
 
@@ -24,7 +29,7 @@ class DuckDBManager:
         """)
         return conn
 
-    def execute_query(self, query: str):
+    def execute_query(self, query: str) -> "pd.DataFrame":
         """
         Queries files stored in MinIO using DuckDB.
         """
@@ -46,7 +51,7 @@ class DuckDBManager:
         except Exception as e:
             result_queue.put(f"ERROR:{str(e)}")
 
-    def execute_query_with_timeout(self, query: str, timeout: float):
+    def execute_query_with_timeout(self, query: str, timeout: float) -> "pd.DataFrame":
         """
         Queries files stored in MinIO using DuckDB with custom timeout implementation which uses subprocessses
         Since duckdb doesn't have built-in timeout support, we use multiprocessing to run the query in a separate process.
@@ -72,11 +77,21 @@ class DuckDBManager:
             process.join() # Ensure cleanup
             logging.debug(f"Process successfully cleaned up")
 
-    def _get_table_path_with_file_name(self, bucket_name: str, file_name: str):
+    def get_table_path_with_file_path(self, bucket_name: str, file_path: str):
         """
-        This function is for testing purposes only and has no practical use.
+        Generate a S3 path for the given file name.
         """
-        return f"read_parquet('s3://{bucket_name}/{file_name}')"
+        return f"read_parquet('s3://{bucket_name}/{file_path}')"
+
+    def get_table_path_with_prefix(self, bucket_name: str, prefix: str) -> str:
+        """
+        Generate a list of S3 paths for the given prefix.
+        """
+        if not self.minio_read_client.is_prefix_exist(bucket_name, prefix):
+            raise ValueError(f"No table path found for the given prefix: {prefix}")
+        
+        return f"read_parquet('s3://{bucket_name}/{prefix}/*.parquet')"
+
 
     def get_table_path_with_dates(self, bucket_name: str, dates: list[str]) -> str:
         """

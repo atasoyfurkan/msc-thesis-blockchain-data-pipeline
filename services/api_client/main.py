@@ -28,9 +28,14 @@ def main():
     SELECT *
     FROM {table_path}
     """
-    query_result = client.execute_query(query=query, persist=True, retention_days=30, custom_username="api_client_user")
+    query_result = client.execute_query(query=query, persist=True, custom_username="api_client_user")
     print(query_result)
 
+    persistent_queries = client.list_persistent_queries(custom_username="api_client_user")
+    print("Persistent queries:", persistent_queries)
+
+    persistent_query_result = client.fetch_persistent_query(query=query, custom_username="api_client_user")
+    print("Persistent query result:", persistent_query_result)
 
 if __name__ == "__main__":
     main()

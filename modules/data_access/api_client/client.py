@@ -70,14 +70,16 @@ class DataPipelineClient:
         except HTTPError as exception:
             if exception.response.status_code == 400:
                 raise ValueError(f"Invalid request (400): {response.text}")
+            else:
+                raise HTTPError(f"Failed to fetch table path {response.text}")
 
     def execute_query(self, query: str, persist: bool = False, custom_username: Optional[str] = None) -> pd.DataFrame:
         """
         Execute a query on DuckDB and return the result as a pandas DataFrame.
         :param 
             query: The SQL query to execute
-            persist: Whether to persist the query results
-            custom_username: The custom username to use for the persistent queries (only admins can use this)
+            persist: Whether to persist the query results (after retention period, the data will be automatically deleted)
+            custom_username: The custom username to use for the persistent queries instead of the current user (only admins can use this)
         :return: pandas DataFrame containing the query result.
         """
         try:
@@ -96,3 +98,48 @@ class DataPipelineClient:
                 raise HTTPError(f"Internal Server Error (500): Failed to execute query {response.text}")
             if exception.response.status_code == 504:
                 raise HTTPError(f"Gateway Timeout (504): Query execution timed out {response.text}. Please run a smaller query.")
+            else:
+                raise HTTPError(f"Failed to execute query {response.text}")
+    
+    def list_persistent_queries(self, custom_username: Optional[str] = None) -> pd.DataFrame:
+        """
+        List all the persistent queries metadata for the current user.
+        :param custom_username: The custom username to use for the persistent queries instead of the current user (only admins can use this)
+        """
+        try:
+            params = {}
+            if custom_username:
+                params['custom_username'] = custom_username
+            
+            response = requests.get(f"{self.base_url}/persistent_query/metadata", params=params, headers=self._get_auth_headers())
+            response.raise_for_status()
+
+            parquet_data = BytesIO(response.content)
+            return pq.read_table(parquet_data).to_pandas()
+        except HTTPError as exception:
+            if exception.response.status_code == 500:
+                raise HTTPError(f"Internal Server Error (500): Failed to list persisted queries {response.text}")
+            else:
+                raise HTTPError(f"Failed to list persisted queries {response.text}")
+    
+    def fetch_persistent_query(self, query: str, custom_username: Optional[str] = None) -> pd.DataFrame:
+        """
+        Fetch the persisted query result for a given query_id.
+        :param query: The query to fetch.
+        :param custom_username: The custom username to use for the persistent queries instead of the current user (only admins can use this)
+        """
+        try:
+            params = {'query': query}
+            if custom_username:
+                params['custom_username'] = custom_username
+
+            response = requests.get(f"{self.base_url}/persistent_query/data", params=params, headers=self._get_auth_headers())
+            response.raise_for_status()
+
+            parquet_data = BytesIO(response.content)
+            return pq.read_table(parquet_data).to_pandas()
+        except HTTPError as exception:
+            if exception.response.status_code == 500:
+                raise HTTPError(f"Internal Server Error (500): Failed to fetch persisted query {response.text}")
+            else:
+                raise HTTPError(f"Failed to fetch persisted query {response.text}")

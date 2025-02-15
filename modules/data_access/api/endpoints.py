@@ -44,7 +44,8 @@ minio_cache_write_client = MinioWriteClient(
 )
 persistent_query_manager = PersistentQueryManager(
     minio_write_client=minio_cache_write_client, 
-    retention_days=PERSISTENT_QUERY_RETENTION_DAYS
+    retention_days=PERSISTENT_QUERY_RETENTION_DAYS,
+    duckdb_manager=duckdb_manager
 )
 
 router = APIRouter()
@@ -85,6 +86,20 @@ def get_table_path(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate table path: {e}")
 
+def _convert_df_to_parquet(df) -> BytesIO:
+    """Convert a DataFrame to Parquet in-memory."""
+    table = pa.Table.from_pandas(df)
+    output = BytesIO()
+    pq.write_table(table, output, compression='snappy')
+    output.seek(0)
+    return output
+
+def _get_parquet_response_headers():
+    return {
+        "Content-Disposition": "attachment; filename=result.parquet",
+        "Content-Type": "application/vnd.apache.parquet"
+    }
+
 @router.get("/query")
 def execute_query_duckdb(query: str, persist: bool, custom_username: Optional[str] = None, user = Depends(authenticate_user)):
     """
@@ -106,22 +121,44 @@ def execute_query_duckdb(query: str, persist: bool, custom_username: Optional[st
 
             persistent_query_manager.persist(df=result_df, query=query, username=username)
         
-        # Convert DataFrame to Parquet in-memory
-        table = pa.Table.from_pandas(result_df)
-        output = BytesIO()
-        pq.write_table(table, output, compression='snappy')
-        output.seek(0)
-
-        # Set headers for file download
-        headers = {
-            "Content-Disposition": "attachment; filename=result.parquet",
-            "Content-Type": "application/vnd.apache.parquet"
-        }
+        # Convert DataFrame to Parquet
+        output = _convert_df_to_parquet(result_df)
 
         logging.debug(f"Query latency: {time.time() - start_time}")
         QUERY_LATENCY.observe(time.time() - start_time)
-        return Response(content=output.read(), headers=headers)
+        return Response(content=output.read(), headers=_get_parquet_response_headers())
     except TimeoutError as e:
         raise HTTPException(status_code=504, detail=f"Query execution timed out and was cancelled: {e}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Query execution failed: {e}")
+    
+@router.get("/persistent_query/metadata")
+def list_persistent_queries(custom_username: Optional[str] = None, user = Depends(authenticate_user)):
+    """
+    List all the persisted queries metadata for the user.
+    Args:
+        custom_username: The custom username to use for the persistent queries (only admin can use this)
+    """
+    try:
+        username = custom_username if user["admin"] and custom_username else user["name"]
+        metadata_df = persistent_query_manager.list_metadata(username=username)
+
+        return Response(content=_convert_df_to_parquet(metadata_df).read(), headers=_get_parquet_response_headers())
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to list persisted queries: {e}")
+    
+@router.get("/persistent_query/data")
+def fetch_persistent_query(query: str, custom_username: Optional[str] = None, user = Depends(authenticate_user)):
+    """
+    Fetch the persisted query result for given query from MinIO.
+    Args:
+        query: The query to fetch.
+        custom_username: The custom username to use for the persistent queries (only admin can use this)
+    """
+    try:
+        username = custom_username if user["admin"] and custom_username else user["name"]
+        result_df = persistent_query_manager.fetch_data(username=username, query=query)
+
+        return Response(content=_convert_df_to_parquet(result_df).read(), headers=_get_parquet_response_headers())
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch persisted query data: {e}")
