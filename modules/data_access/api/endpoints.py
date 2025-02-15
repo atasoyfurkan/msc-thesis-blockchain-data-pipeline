@@ -118,7 +118,6 @@ def execute_query_duckdb(query: str, persist: bool, custom_username: Optional[st
 
         if persist:
             username = custom_username if user["admin"] and custom_username else user["name"]
-
             persistent_query_manager.persist(df=result_df, query=query, username=username)
         
         # Convert DataFrame to Parquet
@@ -155,10 +154,16 @@ def fetch_persistent_query(query: str, custom_username: Optional[str] = None, us
         query: The query to fetch.
         custom_username: The custom username to use for the persistent queries (only admin can use this)
     """
+    start_time = time.time()
+
     try:
         username = custom_username if user["admin"] and custom_username else user["name"]
         result_df = persistent_query_manager.fetch_data(username=username, query=query)
 
-        return Response(content=_convert_df_to_parquet(result_df).read(), headers=_get_parquet_response_headers())
+        output = _convert_df_to_parquet(result_df)
+
+        logging.debug(f"Query latency: {time.time() - start_time}")
+        QUERY_LATENCY.observe(time.time() - start_time)
+        return Response(content=output.read(), headers=_get_parquet_response_headers())
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch persisted query data: {e}")
