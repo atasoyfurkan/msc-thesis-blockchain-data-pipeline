@@ -83,12 +83,16 @@ class DuckDBManager:
         """
         return f"read_parquet('s3://{bucket_name}/{file_path}')"
 
-    def get_table_path_with_prefix(self, bucket_name: str, prefix: str) -> str:
+    def get_table_path_with_prefix(self, bucket_name: str, prefix: str, create_if_not_exist: bool = False) -> str:
         """
         Generate a list of S3 paths for the given prefix.
         """
         if not self.minio_read_client.is_prefix_exist(bucket_name, prefix):
-            raise ValueError(f"No table path found for the given prefix: {prefix}")
+            if create_if_not_exist:
+                logging.info(f"Creating prefix: {prefix}")
+                self.minio_read_client.create_prefix(bucket_name, prefix)
+            else:
+                raise ValueError(f"No table path found for the given prefix: {prefix}")
         
         return f"read_parquet('s3://{bucket_name}/{prefix}/*.parquet')"
 

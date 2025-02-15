@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: validation-researcher-simulator
-        image: atasoy/pipeline-validation-researcher-simulator:v1.1
+        image: atasoy/pipeline-validation-researcher-simulator:v1.2
         env:
           - name: LOGGING_LEVEL
             value: "INFO"
@@ -33,3 +33,9 @@ spec:
               secretKeyRef:
                 name: simulator-secret
                 key: jupyterhub-api-token
+          - name: UNIQUE_USERNAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name # Get the pod name
+          - name: PERSISTENT_QUERY_USAGE_PROBABILITY
+            value: "1.0"

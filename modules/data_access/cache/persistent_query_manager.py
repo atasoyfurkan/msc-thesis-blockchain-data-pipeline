@@ -26,8 +26,8 @@ class PersistentQueryManager:
         self.minio_write_client.set_default_bucket(default_bucket_name=self.bucket_name)
         self.minio_write_client.set_retention_days(retention_days=retention_days)
 
-
-    def _clean_query(self, query: str) -> str:
+    @staticmethod
+    def clean_query(query: str) -> str:
         """Cleans and normalizes an SQL query for safe metadata storage."""
         query = query.strip()  # Remove leading/trailing spaces
         query = re.sub(r'\s+', ' ', query)  # Replace multiple spaces/newlines with a single space
@@ -67,7 +67,7 @@ class PersistentQueryManager:
         """
         Persist the query results to MinIO with metadata.
         """
-        query = self._clean_query(query)
+        query = PersistentQueryManager.clean_query(query)
 
         data_minio_path = self._build_data_minio_path(username, query)
         data_size_mb = self.minio_write_client.upload_df_as_parquet(df=df, minio_path=data_minio_path, metadata={"Query": query, "Retention-Days": self.retention_days})
@@ -83,7 +83,7 @@ class PersistentQueryManager:
         List all the persisted queries metadata for a user.
         """
         prefix = self._build_metadata_minio_prefix(username)
-        table_path = self.duckdb_manager.get_table_path_with_prefix(bucket_name=self.bucket_name, prefix=prefix)
+        table_path = self.duckdb_manager.get_table_path_with_prefix(bucket_name=self.bucket_name, prefix=prefix, create_if_not_exist=True)
         
         metadata_df = self.duckdb_manager.execute_query(f"SELECT * FROM {table_path}")
         logging.debug(f"Metadata: {metadata_df}")
@@ -94,7 +94,7 @@ class PersistentQueryManager:
         """
         Fetch the persisted query result for given query_id from MinIO.
         """
-        query = self._clean_query(query)
+        query = PersistentQueryManager.clean_query(query)
         data_minio_path = self._build_data_minio_path(username=username, query=query)
         table_path = self.duckdb_manager.get_table_path_with_file_path(bucket_name=self.bucket_name, file_path=data_minio_path)
 

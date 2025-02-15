@@ -50,7 +50,7 @@ kubectl apply -f shared_pipeline_secret.yaml
 # Deploy api-backend
 ## Build and push docker image
 docker buildx build --platform linux/amd64 \
-  -t atasoy/pipeline-api-backend:v1.12 \
+  -t atasoy/pipeline-api-backend:v1.13 \
   --file ../services/api_backend/Dockerfile \
   ../ \
   --push
@@ -109,7 +109,7 @@ kubectl apply -f simulators/shared_simulator_secret.yaml
 # Deploy trade-researcher-simulator
 ## Build and push docker image
 docker buildx build --platform linux/amd64 \
-  -t atasoy/pipeline-trade-researcher-simulator:v1.3 \
+  -t atasoy/pipeline-trade-researcher-simulator:v1.4 \
   --file ../services/simulators/trade_researcher_simulator/Dockerfile \
   ../ \
   --push
@@ -119,7 +119,7 @@ kubectl apply -f simulators/trade_researcher_simulator/deployment.yaml
 # Deploy validation-researcher-simulator
 ## Build and push docker image
 docker buildx build --platform linux/amd64 \
-  -t atasoy/pipeline-validation-researcher-simulator:v1.1 \
+  -t atasoy/pipeline-validation-researcher-simulator:v1.2 \
   --file ../services/simulators/validation_researcher_simulator/Dockerfile \
   ../ \
   --push
