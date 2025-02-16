@@ -27,7 +27,7 @@ data:
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "id": 33,
+      "id": 1,
       "links": [
         {
           "icon": "external link",
@@ -526,7 +526,8 @@ data:
             "legend": {
               "calcs": [
                 "mean",
-                "lastNotNull"
+                "lastNotNull",
+                "max"
               ],
               "displayMode": "table",
               "placement": "right",
@@ -728,7 +729,8 @@ data:
             "legend": {
               "calcs": [
                 "mean",
-                "lastNotNull"
+                "lastNotNull",
+                "max"
               ],
               "displayMode": "table",
               "placement": "right",
@@ -844,10 +846,16 @@ data:
           "id": 92,
           "options": {
             "legend": {
-              "calcs": [],
-              "displayMode": "hidden",
+              "calcs": [
+                "mean",
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
               "placement": "right",
-              "showLegend": false
+              "showLegend": true,
+              "sortBy": "Mean",
+              "sortDesc": true
             },
             "tooltip": {
               "mode": "single",
@@ -978,7 +986,8 @@ data:
             "legend": {
               "calcs": [
                 "mean",
-                "lastNotNull"
+                "lastNotNull",
+                "max"
               ],
               "displayMode": "table",
               "placement": "right",
@@ -1235,7 +1244,8 @@ data:
             "legend": {
               "calcs": [
                 "mean",
-                "lastNotNull"
+                "lastNotNull",
+                "max"
               ],
               "displayMode": "table",
               "placement": "right",
@@ -1378,10 +1388,16 @@ data:
           "id": 99,
           "options": {
             "legend": {
-              "calcs": [],
-              "displayMode": "hidden",
+              "calcs": [
+                "mean",
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
               "placement": "right",
-              "showLegend": false
+              "showLegend": true,
+              "sortBy": "Mean",
+              "sortDesc": true
             },
             "tooltip": {
               "mode": "single",
@@ -1512,7 +1528,8 @@ data:
             "legend": {
               "calcs": [
                 "mean",
-                "lastNotNull"
+                "lastNotNull",
+                "max"
               ],
               "displayMode": "table",
               "placement": "right",
@@ -1597,7 +1614,7 @@ data:
         ]
       },
       "time": {
-        "from": "now-1h",
+        "from": "now-2d",
         "to": "now"
       },
       "timepicker": {

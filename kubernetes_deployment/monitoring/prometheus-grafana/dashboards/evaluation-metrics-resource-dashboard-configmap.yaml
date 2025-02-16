@@ -27,7 +27,7 @@ data:
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "id": 34,
+      "id": 2,
       "links": [
         {
           "asDropdown": true,
@@ -1489,13 +1489,13 @@ data:
         ]
       },
       "time": {
-        "from": "now-1h",
+        "from": "now-2d",
         "to": "now"
       },
       "timepicker": {},
       "timezone": "utc",
       "title": "Evaluation Metrics: Resource",
       "uid": "eebd28belq6f4b",
-      "version": 3,
+      "version": 1,
       "weekStart": ""
     }
