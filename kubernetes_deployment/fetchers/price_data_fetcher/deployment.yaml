@@ -37,7 +37,7 @@ spec:
             valueFrom:
               configMapKeyRef:
                 name: pipeline-env
-                key: minio-endpoint
+                key: minio-datalake-endpoint
           - name: MINIO_ROOT_USER
             valueFrom:
               secretKeyRef:

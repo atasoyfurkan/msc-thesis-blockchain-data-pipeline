@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: api-backend
-        image: atasoy/pipeline-api-backend:v1.17
+        image: atasoy/pipeline-api-backend:v1.18
         ports:
         - containerPort: 8000
         env:
@@ -29,11 +29,16 @@ spec:
             value: "300"
           - name: PERSISTENT_QUERY_RETENTION_DAYS
             value: "30"
-          - name: MINIO_ENDPOINT
+          - name: MINIO_DATALAKE_ENDPOINT
             valueFrom:
               configMapKeyRef:
                 name: pipeline-env
-                key: minio-endpoint
+                key: minio-datalake-endpoint
+          - name: MINIO_CACHE_ENDPOINT
+            valueFrom:
+              configMapKeyRef:
+                name: pipeline-env
+                key: minio-cache-endpoint
           - name: MINIO_ROOT_USER
             valueFrom:
               secretKeyRef:

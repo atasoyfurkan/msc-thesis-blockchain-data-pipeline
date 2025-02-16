@@ -36,12 +36,19 @@ helm install nfs-provisioner nfs-subdir-external-provisioner/nfs-subdir-external
   --set nfs.path=/pipeline_minio_data \
   --set storageClass.name=nfs-storage-class
 
-## Install minio-tenant
+## Install minio-datalake
 helm upgrade --install \
     --namespace pipeline \
     --create-namespace \
-    --values minio/values.yaml \
+    --values minio/datalake/values.yaml \
     minio-datalake minio-operator/tenant
+
+## Install minio-cache
+helm upgrade --install \
+    --namespace pipeline-cache \
+    --create-namespace \
+    --values minio/cache/values.yaml \
+    minio-cache minio-operator/tenant
 
 # Deploy shared configs for pipeline
 kubectl apply -f shared_pipeline_configmap.yaml
@@ -50,7 +57,7 @@ kubectl apply -f shared_pipeline_secret.yaml
 # Deploy api-backend
 ## Build and push docker image
 docker buildx build --platform linux/amd64 \
-  -t atasoy/pipeline-api-backend:v1.17 \
+  -t atasoy/pipeline-api-backend:v1.18 \
   --file ../services/api_backend/Dockerfile \
   ../ \
   --push

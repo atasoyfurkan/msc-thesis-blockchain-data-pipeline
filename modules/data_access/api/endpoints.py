@@ -19,26 +19,27 @@ logging.basicConfig(level=os.getenv("LOGGING_LEVEL", "INFO"), format="%(asctime)
 QUERY_LATENCY = Histogram('api_backend_query_latency_seconds', 'Time taken to execute DuckDB queries')
 
 # Load environment variables
-MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT")
+MINIO_DATALAKE_ENDPOINT = os.getenv("MINIO_DATALAKE_ENDPOINT")
+MINIO_CACHE_ENDPOINT = os.getenv("MINIO_CACHE_ENDPOINT")
 MINIO_ROOT_USER = os.getenv("MINIO_ROOT_USER")
 MINIO_ROOT_PASSWORD = os.getenv("MINIO_ROOT_PASSWORD")
 
 QUERY_TIMEOUT_SECONDS = float(os.getenv("QUERY_TIMEOUT_SECONDS"))
 PERSISTENT_QUERY_RETENTION_DAYS = int(os.getenv("PERSISTENT_QUERY_RETENTION_DAYS")) # Number of days to retain the persistent query results
 
-if not MINIO_ENDPOINT or not MINIO_ROOT_USER or not MINIO_ROOT_PASSWORD or not QUERY_TIMEOUT_SECONDS:
+if not MINIO_DATALAKE_ENDPOINT or not MINIO_CACHE_ENDPOINT or not MINIO_ROOT_USER or not MINIO_ROOT_PASSWORD or not QUERY_TIMEOUT_SECONDS:
     raise ValueError("Missing required environment variables")
 
 # Initialize clients
 minio_client = MinioReadClient(
-    endpoint=MINIO_ENDPOINT,
+    endpoint=MINIO_DATALAKE_ENDPOINT,
     access_key=MINIO_ROOT_USER,
     secret_key=MINIO_ROOT_PASSWORD
 )
 duckdb_manager = DuckDBManager(minio_read_client=minio_client)
 
 minio_cache_write_client = MinioWriteClient(
-    endpoint=MINIO_ENDPOINT,
+    endpoint=MINIO_CACHE_ENDPOINT,
     access_key=MINIO_ROOT_USER,
     secret_key=MINIO_ROOT_PASSWORD
 )

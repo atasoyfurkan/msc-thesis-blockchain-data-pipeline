@@ -4,7 +4,8 @@ metadata:
   name: pipeline-env
   namespace: pipeline
 data:
-  minio-endpoint: "minio:80"
+  minio-datalake-endpoint: "minio.pipeline.svc.cluster.local:80"
+  minio-cache-endpoint: "minio.pipeline-cache.svc.cluster.local:80"
   ethereum-node-ws-url: "ws://172.16.24.1:8546"
   ethereum-node-http-url: "http://172.16.24.1:8545"
   prometheus-pushgateway-url: "http://prometheus-pushgateway.monitoring.svc.cluster.local:9091"
