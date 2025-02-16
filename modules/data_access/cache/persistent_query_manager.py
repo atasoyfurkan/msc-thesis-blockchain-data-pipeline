@@ -70,7 +70,8 @@ class PersistentQueryManager:
         query = PersistentQueryManager.clean_query(query)
 
         data_minio_path = self._build_data_minio_path(username, query)
-        data_size_mb = self.minio_write_client.upload_df_as_parquet(df=df, minio_path=data_minio_path, metadata={"Query": query, "Retention-Days": self.retention_days})
+        truncated_query = query[:5000] # Truncate query to 5000 characters for metadata storage in MinIO (limit is 8KB metadata in MinIO)
+        data_size_mb = self.minio_write_client.upload_df_as_parquet(df=df, minio_path=data_minio_path, metadata={"Query": truncated_query, "Retention-Days": self.retention_days})
         
         if data_size_mb:
             # Save metadata if the data was saved successfully
