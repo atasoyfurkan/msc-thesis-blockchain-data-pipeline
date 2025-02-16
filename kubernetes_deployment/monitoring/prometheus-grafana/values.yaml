@@ -72,6 +72,10 @@ grafana:
       - hosts:
           - grafana.pipeline.atasoyfurkan.live            # Replace with your domain name
         secretName: grafana-tls-secret     # Secret for TLS certificate
+  persistence:
+    enabled: true
+    type: pvc
+    size: 7Gi
   adminUser: admin                         # Default admin username
   adminPassword: EEnDK0j0Fz_QmxG_oDdWQ_O552PbNfXQvwDUAfh-2nY             # Default admin password
   additionalDataSources:

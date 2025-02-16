@@ -11,9 +11,17 @@ class WorkloadSimulator:
     This class simulates the workloads for different personas.
     It runs the given notebook at exponentially distributed interarrival times.
     """
-    def __init__(self, mean_interarrival_time_seconds: int, unique_username: str, notebook_runner: Callable, persistent_query_usage_probability: float):
+    def __init__(
+        self, 
+        mean_interarrival_time_seconds: int, 
+        unique_username: str, 
+        notebook_runner: Callable, 
+        persistent_query_usage_probability: float, 
+        enable_persistent_query: bool
+    ):
         self.client = DataPipelineClientWithCachingProbability(
             persistent_query_usage_probability=persistent_query_usage_probability, 
+            enable_persistent_query=enable_persistent_query,
             unique_username=unique_username
         )
         self.mean_interarrival_time_seconds = mean_interarrival_time_seconds
@@ -47,10 +55,11 @@ class WorkloadSimulator:
         return start_index, end_index
 
 class DataPipelineClientWithCachingProbability(DataPipelineClient):
-    def __init__(self, persistent_query_usage_probability: float, unique_username: str):
+    def __init__(self, persistent_query_usage_probability: float, enable_persistent_query: bool, unique_username: str):
         super().__init__()
         self.persistent_query_usage_probability = persistent_query_usage_probability
         self.unique_username = unique_username
+        self.enable_persistent_query = enable_persistent_query
 
     def _is_query_already_persisted(self, query: str, custom_username: Optional[str] = None):
         """Check if the query is already persisted in the cache."""
@@ -63,4 +72,4 @@ class DataPipelineClientWithCachingProbability(DataPipelineClient):
             logging.info(f"Using persistent query for user: {self.unique_username} with probability {self.persistent_query_usage_probability}")
             super().fetch_persistent_query(query, custom_username=self.unique_username)
         else: # Do not use persistent queries
-            return super().execute_query(query, persist=True, custom_username=self.unique_username)
+            return super().execute_query(query, persist=self.enable_persistent_query, custom_username=self.unique_username)
