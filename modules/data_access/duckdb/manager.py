@@ -69,7 +69,7 @@ class DuckDBManager:
             return result_df
         except multiprocessing.queues.Empty:
             if process.is_alive() and os.path.exists(f"/proc/{process.pid}"): # Check if the process is still alive
-                logging.info(f"Process timed out. Terminating process {process.pid}")
+                logging.info(f"Process timed out. Terminating process {process.pid} for query: {query}")
                 os.kill(process.pid, signal.SIGKILL)
             
             raise TimeoutError(f"Query timed out after {timeout} seconds")

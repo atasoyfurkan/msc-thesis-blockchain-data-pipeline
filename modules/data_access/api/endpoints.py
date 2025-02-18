@@ -32,21 +32,28 @@ if not MINIO_DATALAKE_ENDPOINT or not MINIO_CACHE_ENDPOINT or not MINIO_ROOT_USE
 
 # Initialize clients
 minio_client = MinioReadClient(
-    endpoint=MINIO_DATALAKE_ENDPOINT,
-    access_key=MINIO_ROOT_USER,
+    endpoint=MINIO_DATALAKE_ENDPOINT, 
+    access_key=MINIO_ROOT_USER, 
     secret_key=MINIO_ROOT_PASSWORD
 )
-duckdb_manager = DuckDBManager(minio_read_client=minio_client)
+duckdb_manager = DuckDBManager(
+    minio_read_client=minio_client
+)
 
-minio_cache_write_client = MinioWriteClient(
-    endpoint=MINIO_CACHE_ENDPOINT,
-    access_key=MINIO_ROOT_USER,
-    secret_key=MINIO_ROOT_PASSWORD
-)
 persistent_query_manager = PersistentQueryManager(
-    minio_write_client=minio_cache_write_client, 
+    minio_write_client=MinioWriteClient(
+        endpoint=MINIO_CACHE_ENDPOINT,
+        access_key=MINIO_ROOT_USER,
+        secret_key=MINIO_ROOT_PASSWORD
+    ), 
     retention_days=PERSISTENT_QUERY_RETENTION_DAYS,
-    duckdb_manager=duckdb_manager
+    duckdb_manager=DuckDBManager(
+        minio_read_client=MinioReadClient(
+            endpoint=MINIO_CACHE_ENDPOINT, 
+            access_key=MINIO_ROOT_USER, 
+            secret_key=MINIO_ROOT_PASSWORD
+        )
+    )
 )
 
 router = APIRouter()

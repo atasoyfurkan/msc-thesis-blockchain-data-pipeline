@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: api-backend
-        image: atasoy/pipeline-api-backend:v1.18
+        image: atasoy/pipeline-api-backend:v1.22
         ports:
         - containerPort: 8000
         env:
