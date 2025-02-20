@@ -38,6 +38,6 @@ spec:
               fieldRef:
                 fieldPath: metadata.name # Get the pod name
           - name: ENABLE_PERSISTENT_QUERY 
-            value: "false"
+            value: "true"
           - name: PERSISTENT_QUERY_USAGE_PROBABILITY
-            value: "0.0"
+            value: "0.7"
