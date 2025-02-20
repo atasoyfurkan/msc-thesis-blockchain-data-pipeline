@@ -16,7 +16,7 @@ from prometheus_client import Histogram
 logging.basicConfig(level=os.getenv("LOGGING_LEVEL", "INFO"), format="%(asctime)s [%(levelname)s] %(message)s")
 
 # Prometheus metrics
-QUERY_LATENCY = Histogram('api_backend_query_latency_seconds', 'Time taken to execute DuckDB queries')
+QUERY_LATENCY = Histogram('api_backend_query_latency_seconds', 'Time taken to execute DuckDB queries', ['source'])
 
 # Load environment variables
 MINIO_DATALAKE_ENDPOINT = os.getenv("MINIO_DATALAKE_ENDPOINT")
@@ -132,7 +132,7 @@ def execute_query_duckdb(query: str, persist: bool, custom_username: Optional[st
         output = _convert_df_to_parquet(result_df)
 
         logging.debug(f"Query latency: {time.time() - start_time}")
-        QUERY_LATENCY.observe(time.time() - start_time)
+        QUERY_LATENCY.labels(source="api_backend_execute_query").observe(time.time() - start_time)
         return Response(content=output.read(), headers=_get_parquet_response_headers())
     except TimeoutError as e:
         raise HTTPException(status_code=504, detail=f"Query execution timed out and was cancelled: {e}")
@@ -171,7 +171,7 @@ def fetch_persistent_query(query: str, custom_username: Optional[str] = None, us
         output = _convert_df_to_parquet(result_df)
 
         logging.debug(f"Query latency: {time.time() - start_time}")
-        QUERY_LATENCY.observe(time.time() - start_time)
+        QUERY_LATENCY.labels(source="api_backend_fetch_persistent_query").observe(time.time() - start_time)
         return Response(content=output.read(), headers=_get_parquet_response_headers())
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch persisted query data: {e}")

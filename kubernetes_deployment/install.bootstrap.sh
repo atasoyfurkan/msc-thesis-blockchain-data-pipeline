@@ -57,7 +57,7 @@ kubectl apply -f shared_pipeline_secret.yaml
 # Deploy api-backend
 ## Build and push docker image
 docker buildx build --platform linux/amd64 \
-  -t atasoy/pipeline-api-backend:v1.22 \
+  -t atasoy/pipeline-api-backend:v1.23 \
   --file ../services/api_backend/Dockerfile \
   ../ \
   --push
