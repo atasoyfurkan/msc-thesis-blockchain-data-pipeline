@@ -15,6 +15,7 @@ loki:
   limits_config:
     allow_structured_metadata: true
     volume_enabled: true
+    retention_period: 60d
   ruler:
     enable_api: true
   auth_enabled: false
@@ -56,3 +57,12 @@ bloomGateway:
 
 metrics:
   enabled: true
+
+compactor:
+  enabled: true
+  working_directory: /data/loki/boltdb-shipper-compactor
+  shared_store: s3
+  compaction_interval: 24h
+  retention_enabled: true
+  retention_delete_delay: 24h
+  retention_delete_worker_count: 50

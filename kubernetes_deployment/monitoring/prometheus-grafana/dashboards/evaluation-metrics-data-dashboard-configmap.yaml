@@ -27,7 +27,7 @@ data:
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "id": 1,
+      "id": 35,
       "links": [
         {
           "icon": "external link",
@@ -281,7 +281,7 @@ data:
               "editorMode": "code",
               "exemplar": true,
               "expr": "max(minio_cluster_usage_total_bytes{job=~\"$scrape_jobs_cluster\"})",
-              "interval": "",
+              "interval": "15m",
               "legendFormat": "Usage",
               "range": true,
               "refId": "A"
@@ -376,6 +376,7 @@ data:
               "editorMode": "code",
               "exemplar": true,
               "expr": "max(minio_bucket_usage_total_bytes{job=~\"$scrape_jobs_bucket\", bucket=~\".+\"}) by (bucket)",
+              "interval": "15m",
               "legendFormat": "__auto",
               "range": true,
               "refId": "A"
@@ -550,7 +551,7 @@ data:
               "editorMode": "code",
               "exemplar": true,
               "expr": "sum(rate(fetcher_average_ingestion_latency_seconds_sum[$__rate_interval])) \n/ \nsum(rate(fetcher_average_ingestion_latency_seconds_count[$__rate_interval]))",
-              "interval": "",
+              "interval": "15m",
               "intervalFactor": 1,
               "legendFormat": "Average Latency",
               "range": true,
@@ -753,7 +754,7 @@ data:
               "editorMode": "code",
               "exemplar": true,
               "expr": "sum(rate(fetcher_average_ingestion_latency_seconds_sum[$__rate_interval])) by (job)\n/\nsum(rate(fetcher_average_ingestion_latency_seconds_count[$__rate_interval])) by (job)",
-              "interval": "",
+              "interval": "15m",
               "intervalFactor": 1,
               "legendFormat": "__auto",
               "range": true,
@@ -809,7 +810,7 @@ data:
                 "scaleDistribution": {
                   "type": "linear"
                 },
-                "showPoints": "auto",
+                "showPoints": "never",
                 "spanNulls": false,
                 "stacking": {
                   "group": "A",
@@ -872,7 +873,7 @@ data:
               "editorMode": "code",
               "exemplar": true,
               "expr": "sum(rate(minio_s3_traffic_received_bytes{job=~\"$scrape_jobs_cluster\"}[$__rate_interval]))",
-              "interval": "",
+              "interval": "15m",
               "intervalFactor": 4,
               "legendFormat": "Throughput",
               "range": true,
@@ -1010,7 +1011,7 @@ data:
               "editorMode": "code",
               "exemplar": true,
               "expr": "sum by (bucket) (rate(minio_bucket_traffic_received_bytes{job=\"$scrape_jobs_bucket\"}[$__rate_interval]))",
-              "interval": "1m",
+              "interval": "15m",
               "intervalFactor": 2,
               "legendFormat": "{{bucket}}",
               "range": true,
@@ -1268,7 +1269,7 @@ data:
               "editorMode": "code",
               "exemplar": true,
               "expr": "sum(rate(api_backend_query_latency_seconds_sum[$__rate_interval])) \n/ \nsum(rate(api_backend_query_latency_seconds_count[$__rate_interval]))",
-              "interval": "",
+              "interval": "15m",
               "intervalFactor": 1,
               "legendFormat": "Average Latency",
               "range": true,
@@ -1282,7 +1283,7 @@ data:
               "editorMode": "code",
               "exemplar": false,
               "expr": "histogram_quantile(0.50, rate(api_backend_query_latency_seconds_bucket[$__rate_interval]))",
-              "hide": false,
+              "hide": true,
               "instant": false,
               "legendFormat": "P50 Latency",
               "range": true,
@@ -1295,7 +1296,7 @@ data:
               },
               "editorMode": "code",
               "expr": "histogram_quantile(0.90, rate(api_backend_query_latency_seconds_bucket[$__rate_interval]))",
-              "hide": false,
+              "hide": true,
               "instant": false,
               "legendFormat": "P90 Latency",
               "range": true,
@@ -1308,7 +1309,7 @@ data:
               },
               "editorMode": "code",
               "expr": "histogram_quantile(0.99, rate(api_backend_query_latency_seconds_bucket[$__rate_interval]))",
-              "hide": false,
+              "hide": true,
               "instant": false,
               "legendFormat": "P99 Latency",
               "range": true,
@@ -1414,7 +1415,7 @@ data:
               "editorMode": "code",
               "exemplar": true,
               "expr": "sum((rate(minio_s3_traffic_sent_bytes{job=~\"$scrape_jobs_cluster\"}[$__rate_interval])))",
-              "interval": "",
+              "interval": "15m",
               "intervalFactor": 4,
               "legendFormat": "Througput",
               "range": true,
@@ -1552,7 +1553,7 @@ data:
               "editorMode": "code",
               "exemplar": true,
               "expr": "sum by (bucket) (rate(minio_bucket_traffic_sent_bytes{job=\"$scrape_jobs_bucket\"}[$__rate_interval]))",
-              "interval": "1m",
+              "interval": "15m",
               "intervalFactor": 2,
               "legendFormat": "{{bucket}}",
               "range": true,
@@ -1560,6 +1561,109 @@ data:
             }
           ],
           "title": "Query Throughput by Buckets",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 5,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 81
+          },
+          "id": 102,
+          "options": {
+            "alertThreshold": true,
+            "legend": {
+              "calcs": [
+                "mean",
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true,
+              "sortBy": "Mean",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "pluginVersion": "11.4.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "Prometheus"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "(\n  sum(rate(api_backend_query_latency_seconds_count{source=\"api_backend_fetch_persistent_query\"}[$__rate_interval]))\n  /\n  sum(rate(api_backend_query_latency_seconds_count[$__rate_interval]))\n) * 100",
+              "interval": "15m",
+              "intervalFactor": 2,
+              "legendFormat": "{{bucket}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Query Cache Hit Rate",
           "type": "timeseries"
         }
       ],
@@ -1632,7 +1736,7 @@ data:
       },
       "timezone": "Europe/Berlin",
       "title": "Evaluation Metrics: Data",
-      "uid": "cebcpk2jcj6kgf",
-      "version": 1,
+      "uid": "eeeq2v3yq3i0wb",
+      "version": 2,
       "weekStart": ""
     }

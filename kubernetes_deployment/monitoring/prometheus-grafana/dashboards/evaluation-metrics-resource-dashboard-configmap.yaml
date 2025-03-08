@@ -27,7 +27,7 @@ data:
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "id": 2,
+      "id": 36,
       "links": [
         {
           "asDropdown": true,
@@ -205,7 +205,7 @@ data:
               "exemplar": false,
               "expr": "sum(\n    irate(container_cpu_usage_seconds_total{job=\"kubelet\",metrics_path=\"/metrics/cadvisor\"}[5m])\n  * on(namespace,pod)\n    group_left(workload) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\"}\n)",
               "instant": false,
-              "interval": "",
+              "interval": "15m",
               "legendFormat": "Overall",
               "range": true,
               "refId": "A"
@@ -217,6 +217,8 @@ data:
               },
               "editorMode": "code",
               "expr": "scalar(max(kube_resourcequota{cluster=\"$cluster\", namespace=\"$namespace\", type=\"hard\",resource=~\"requests.cpu|cpu\"}))",
+              "hide": true,
+              "interval": "15m",
               "legendFormat": "quota - requests",
               "range": true,
               "refId": "B"
@@ -228,6 +230,8 @@ data:
               },
               "editorMode": "code",
               "expr": "scalar(max(kube_resourcequota{cluster=\"$cluster\", namespace=\"$namespace\", type=\"hard\",resource=~\"limits.cpu\"}))",
+              "hide": true,
+              "interval": "15m",
               "legendFormat": "quota - limits",
               "range": true,
               "refId": "C"
@@ -386,7 +390,7 @@ data:
               "exemplar": false,
               "expr": "sum(\n    irate(container_cpu_usage_seconds_total{job=\"kubelet\",metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}[5m])\n  * on(namespace,pod)\n    group_left(workload) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\"}\n) by (workload)\n",
               "instant": false,
-              "interval": "",
+              "interval": "15m",
               "legendFormat": "{{workload}}",
               "range": true,
               "refId": "A"
@@ -398,6 +402,8 @@ data:
               },
               "editorMode": "code",
               "expr": "scalar(max(kube_resourcequota{cluster=\"$cluster\", namespace=\"$namespace\", type=\"hard\",resource=~\"requests.cpu|cpu\"}))",
+              "hide": true,
+              "interval": "15m",
               "legendFormat": "quota - requests",
               "range": true,
               "refId": "B"
@@ -409,6 +415,8 @@ data:
               },
               "editorMode": "code",
               "expr": "scalar(max(kube_resourcequota{cluster=\"$cluster\", namespace=\"$namespace\", type=\"hard\",resource=~\"limits.cpu\"}))",
+              "hide": true,
+              "interval": "15m",
               "legendFormat": "quota - limits",
               "range": true,
               "refId": "C"
@@ -579,6 +587,7 @@ data:
               },
               "editorMode": "code",
               "expr": "sum(\n    container_memory_working_set_bytes{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}\n  * on(namespace,pod)\n    group_left(workload) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\"}\n)",
+              "interval": "15m",
               "legendFormat": "{{workload}}",
               "range": true,
               "refId": "A"
@@ -589,6 +598,7 @@ data:
                 "uid": "${datasource}"
               },
               "expr": "scalar(max(kube_resourcequota{cluster=\"$cluster\", namespace=\"$namespace\", type=\"hard\",resource=~\"requests.memory|memory\"}))",
+              "hide": true,
               "legendFormat": "quota - requests",
               "refId": "B"
             },
@@ -598,6 +608,7 @@ data:
                 "uid": "${datasource}"
               },
               "expr": "scalar(max(kube_resourcequota{cluster=\"$cluster\", namespace=\"$namespace\", type=\"hard\",resource=~\"limits.memory\"}))",
+              "hide": true,
               "legendFormat": "quota - limits",
               "refId": "C"
             }
@@ -754,29 +765,10 @@ data:
               },
               "editorMode": "code",
               "expr": "sum(\n    container_memory_working_set_bytes{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", cluster=\"$cluster\", namespace=\"$namespace\"}\n  * on(namespace,pod)\n    group_left(workload) namespace_workload_pod:kube_pod_owner:relabel{cluster=\"$cluster\", namespace=\"$namespace\"}\n) by (workload)\n",
+              "interval": "15m",
               "legendFormat": "{{workload}}",
               "range": true,
               "refId": "A"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${datasource}"
-              },
-              "editorMode": "code",
-              "expr": "scalar(max(kube_resourcequota{cluster=\"$cluster\", namespace=\"$namespace\", type=\"hard\",resource=~\"requests.memory|memory\"}))",
-              "legendFormat": "quota - requests",
-              "range": true,
-              "refId": "B"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${datasource}"
-              },
-              "expr": "scalar(max(kube_resourcequota{cluster=\"$cluster\", namespace=\"$namespace\", type=\"hard\",resource=~\"limits.memory\"}))",
-              "legendFormat": "quota - limits",
-              "refId": "C"
             }
           ],
           "title": "Memory Usage by Services",
@@ -1495,7 +1487,7 @@ data:
       "timepicker": {},
       "timezone": "utc",
       "title": "Evaluation Metrics: Resource",
-      "uid": "eebd28belq6f4b",
+      "uid": "aeeq36j8pqq68c",
       "version": 1,
       "weekStart": ""
     }
