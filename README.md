@@ -56,6 +56,15 @@ pipeline/
 
 - **`docker-compose.yaml`**: Defines the services for local deployment. Allows developers to run the full pipeline stack locally using Docker Compose, ideal for testing and development.
 
+## Running the System Locally
+
+To run the full pipeline stack locally, use Docker Compose. This will build and start all necessary services.
+
+```bash
+docker compose up --build
+```
+
+Once the build completes, the system should be up and running with all services connected and operational.
 
 ## Deployment
 
