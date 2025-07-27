@@ -8,7 +8,7 @@ The pipeline supports real-time and batch ingestion, efficient querying, and acc
 
 ## Architecture
 
-<img src="docs/architecture.png" alt="Architecture Diagram" width="60%">
+<img src="docs/architecture.png" alt="Architecture Diagram" width="40%">
 
 - **Data Sources**: On-chain data from a local Ethereum node (WebSocket) and off-chain price data from Binance API (REST).
 - **Ingestion Layer**: Block, transfer event, mempool, and price data fetchers write raw data to MinIO (data lake) via S3 API.
