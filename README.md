@@ -75,8 +75,6 @@ The system runs on Kubernetes. See `kubernetes_deployment/` for manifests and de
 - [Master's Thesis (PDF)](docs/thesis.pdf)
 - [Final Talk Slides (PDF)](docs/final-talk.pdf)
 
-Certainly! Here's the same content formatted in Markdown:
-
 ## Adding New Fetchers and Data Sources
 
 To add a new fetcher (and data source), you will need to make changes in three main parts of the codebase:
