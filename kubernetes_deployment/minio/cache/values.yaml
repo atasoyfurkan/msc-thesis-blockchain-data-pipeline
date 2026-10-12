@@ -91,7 +91,7 @@ tenant:
   configSecret:
     name: minio-cache-env-configuration
     accessKey: admin
-    secretKey: EEnDK0j0Fz_QmxG_oDdWQ_O552PbNfXQvwDUAfh-2nY
+    secretKey: <MINIO_SECRET_KEY>
     #existingSecret: true
 
   ###

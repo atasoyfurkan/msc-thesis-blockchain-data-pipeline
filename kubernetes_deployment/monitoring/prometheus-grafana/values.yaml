@@ -34,7 +34,7 @@ prometheus:
               - hub.atasoyfurkan.live  
         authorization:
           type: Bearer
-          credentials: c30b241bd9ae46cba2f6e2a8dc023ab7
+          credentials: <API_TOKEN>
       - job_name: 'loki'
         metrics_path: /metrics
         static_configs:
@@ -78,7 +78,7 @@ grafana:
     type: pvc
     size: 7Gi
   adminUser: admin                         # Default admin username
-  adminPassword: EEnDK0j0Fz_QmxG_oDdWQ_O552PbNfXQvwDUAfh-2nY             # Default admin password
+  adminPassword: <ADMIN_PASSWORD>             # Default admin password
   additionalDataSources:
     - name: Loki
       type: loki

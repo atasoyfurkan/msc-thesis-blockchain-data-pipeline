@@ -82,5 +82,5 @@ mount /mnt/pipeline_minio_data
 ##### Define Public IP #####
 
 ip link set eno6 up
-sudo ip addr add 131.159.14.109/25 dev eno6
-sudo ip route add default via 131.159.14.126 dev eno6
+sudo ip addr add <IP_ADDRESS_OF_NODE>/25 dev eno6
+sudo ip route add default via <IP_ADDRESS_OF_NODE> dev eno6
