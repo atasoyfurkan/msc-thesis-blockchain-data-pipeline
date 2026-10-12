@@ -1,0 +1,110 @@
+# This file can update the JupyterHub Helm chart's default configuration values.
+#
+# For reference see the configuration reference and default values, but make
+# sure to refer to the Helm chart version of interest to you!
+#
+# Introduction to YAML:     https://www.youtube.com/watch?v=cdLNKUoMc6c
+# Chart config reference:   https://zero-to-jupyterhub.readthedocs.io/en/stable/resources/reference.html
+# Chart default values:     https://github.com/jupyterhub/zero-to-jupyterhub-k8s/blob/HEAD/jupyterhub/values.yaml
+# Available chart versions: https://hub.jupyter.org/helm-chart/
+#
+
+hub:
+  baseUrl: /
+  config:
+    JupyterHub:
+      authenticator_class: gitlab
+      metrics:
+        enabled: true  
+    OAuthenticator: 
+      oauth_callback_url: https://hub.atasoyfurkan.live/hub/oauth_callback
+      client_id: b618672e5432bbce59408d1d3c4f8f641ed3f40f4a956624d43926d7e1d1ead5
+      client_secret: <SECRET>
+      gitlab_url: https://gitlab.lrz.de
+      allowed_gitlab_groups: ['tumchainbook-seba']
+      admin_users: ['atasoyfurkan']
+      auto_login: true
+      enable_auth_state: true
+  services:
+    integrated-services: # This api token is used by all integrated services that connect to the JupyterHub. You can use this token to authenticate the services.
+      admin: true
+      api_token: <API_TOKEN>
+  extraConfig:
+    mountSharedVolume.py: |
+      # Dynamically mount a shared volume:
+      ## if the user is an admin -> read-write access
+      ## if the user is not an admin -> read-only access
+      from kubespawner import KubeSpawner
+
+      def my_pre_spawn_hook(spawner: KubeSpawner):
+          shared_volume = {
+              'name': 'jupyterhub-shared',
+              'persistentVolumeClaim': {
+                  'claimName': 'jupyterhub-shared-volume'
+              }
+          }
+          spawner.volumes.append(shared_volume)
+
+          if spawner.user.admin:
+              spawner.volume_mounts.append({
+                  'name': 'jupyterhub-shared',
+                  'mountPath': '/home/jovyan/shared',
+                  'readOnly': False
+              })
+          else:
+              spawner.volume_mounts.append({
+                  'name': 'jupyterhub-shared',
+                  'mountPath': '/home/jovyan/shared',
+                  'readOnly': True
+              })
+
+      c.KubeSpawner.pre_spawn_hook = my_pre_spawn_hook
+      c.KubeSpawner.init_containers = [
+          {
+              "name": "fix-permissions",
+              "image": "busybox",
+              "command": ["sh", "-c", "chown -R 1000:100 /home/jovyan/shared && chmod -R 775 /home/jovyan/shared"],
+              "volumeMounts": [
+                  {
+                      "name": "jupyterhub-shared",
+                      "mountPath": "/home/jovyan/shared"
+                  }
+              ]
+          }
+      ]
+
+proxy:
+  secretToken: <SECRET_TOKEN>
+  service:
+    type: ClusterIP
+  https:
+    enabled: false
+    hosts:
+      - hub.atasoyfurkan.live
+    letsencrypt:
+      contactEmail: <EMAIL_ADDRESS>
+
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  hosts:
+    - hub.atasoyfurkan.live
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  tls:
+    - hosts:
+      - hub.atasoyfurkan.live
+      secretName: cluster-issuer-secret-hub
+
+singleuser:
+  image:
+    name: quay.io/jupyter/datascience-notebook
+    tag: latest
+  storage:
+    dynamic:
+      storageClass: local-path
+    capacity: 3Gi
+  networkPolicy:
+    enabled: false  
+  extraEnv:
+    PIPELINE_API_BACKEND_URL: "https://api-backend.pipeline.atasoyfurkan.live"

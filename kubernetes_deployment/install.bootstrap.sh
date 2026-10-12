@@ -133,7 +133,21 @@ docker buildx build --platform linux/amd64 \
 ## Apply kubernetes manifests
 kubectl apply -f simulators/validation_researcher_simulator/deployment.yaml
 
+# Install jupyterhub
+## pre-pull singleuser image to avoid timeouts during applying helm chart
+sudo ctr images pull quay.io/jupyter/datascience-notebook:latest
+## apply helm chart
+helm repo add jupyterhub https://hub.jupyter.org/helm-chart/
+helm repo update
+helm upgrade --cleanup-on-fail \
+  --install jupyterhub jupyterhub/jupyterhub \
+  --namespace default \
+  --create-namespace \
+  --version=3.2.1 \
+  --values jupyterhub/config.yaml
 
+kubectl apply -f jupyterhub/shared-volume-pvc.yaml
+kubectl apply -f jupyterhub/secret.yaml
 
 # Install prometheus and grafana
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
